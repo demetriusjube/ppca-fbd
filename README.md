@@ -3,8 +3,59 @@ Código da Disciplina Fundamentos de Bancos de Dados
 
 ## Arquitetura
 
-O código do trabalho é feito usando como SGBD MySQL. Para utilizá-lo, vamos usar uma imagem 
+O código do trabalho é feito usando como SGBD MySQL. Para utilizá-lo, vamos usar uma imagem Docker que já roda o banco de dados.
 
-Após isso, faremos a importação dos dados das Cotas Parlamentares dos Senadores. Os dados abertos estão em https://www12.senado.leg.br/dados-abertos/conjuntos?portal=Administrativo&grupo=senadores, item Cotas para Exercício da Atividade Parlamentar dos Senadores (CEAPS)
+Após isso, faremos a importação dos dados das Cotas Parlamentares dos Senadores. Os dados abertos estão em https://www12.senado.leg.br/dados-abertos/conjuntos?portal=Administrativo&grupo=senadores, item Cotas para Exercício da Atividade Parlamentar dos Senadores (CEAPS). Esses dados serão importados para uma tabela única, e normalizados em tabelas específicas depois.
+
+Utilizaremos como ferramenta de interação com o banco de dados o DBeaver 
+
+## Montagem do ambiente
+
+- Instale o Docker com o Docker Compose(https://docs.docker.com/compose/install/)
+- Rode o seguinte comando no local onde está o arquivo docker-compose.yml para subir o banco de dados: `docker-compose up`. Ele vai criar um banco de dados com as seguintes características:
+ - Server host: localhost
+ - Port: 3306
+ - Database: fbd
+ - Username: root
+ - Password: fbd
+- Instale o DBeaver (https://dbeaver.io/download/)
+
+### Configuração do DBeaver
+
+Pra acessar com mais facilidade o banco de dados e permitir uma importação com facilidade, é necessário configurar uma conexão com o DBeaver. Ela será feita conforme o roteiro abaixo:
+
+1. Na aba Navegador de Banco de Dados, clique com o botão direito e selecione Criar -> Connection:
+![Conexão](images/conexao-criar.png)
+
+2. Selecione, na lista de SGBDs, o driver do MySQL. Se ele não estiver na máquina, ele vai baixar:
+![Seleção do driver MySQL](images/conexao-driver.png)
+
+3. Configure a conexão com as credenciais do banco criado pelo Docker (se usar uma instalação própria, use as credenciais definidas lá):
+![Configuração das credenciais](images/conexao-config.png)
+
+4. Modifique a conexão para que a opção Allow Public Key seja setada para `true`. Isso evita o erro de conexão que acontece quando o MySQL tenta recuperar uma chave pública para a conexão:
+![Configuração Allow Public Key](images/conexao-allow-public-key.png)
+
+5. Salve a conexão. 
+
+## Importação dos dados
+
+Para dar a carga dos dados recuperados do site da Transparência no nosso banco de dados, precisaremos fazer a preparação dos dados dos arquivos e a importação no SGBD. Os passos serão descritos abaixo:
+
+### Tratamento dos arquivos
+
+- Baixar os dados do [site](https://www12.senado.leg.br/dados-abertos/conjuntos?portal=Administrativo&grupo=senadores). Utilizaremos o período de 2009 a 2021, por estarem mais completos e íntegros
+- Abra os arquivos `csv` e retire a primeira linha. Ela tem o seguinte formato: `"ULTIMA ATUALIZACAO";"06/08/2021 02:00"`
+
+### Importação dos dados para o SGBD
+
+- Crie a tabela CEAPS no banco de dados `fbd`. Para isso, clique com o botão direito e abra um Editor SQL:
+![DBeaver SQL](images/dbeaver-sql.png)
+
+- Rode o script que está localizado em `fbd_script/ceaps.sql`. Ele criará a tabela CEAPS.
+- 
+
+
+
 
 
