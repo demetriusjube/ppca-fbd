@@ -5,7 +5,7 @@ Código da Disciplina Fundamentos de Bancos de Dados
 
 O código do trabalho é feito usando como SGBD MySQL. Para utilizá-lo, vamos usar uma imagem Docker que já roda o banco de dados.
 
-Após isso, faremos a importação dos dados das Cotas Parlamentares dos Senadores. Os dados abertos estão em https://www12.senado.leg.br/dados-abertos/conjuntos?portal=Administrativo&grupo=senadores, item Cotas para Exercício da Atividade Parlamentar dos Senadores (CEAPS). Esses dados serão importados para uma tabela única, e normalizados em tabelas específicas depois.
+Após isso, faremos a importação dos dados das Cotas Parlamentares dos Senadores. Os dados abertos estão em https://www12.senado.leg.br/transparencia/dados-abertos-transparencia/dados-abertos-ceaps, item Cotas para Exercício da Atividade Parlamentar dos Senadores (CEAPS). Esses dados serão importados para uma tabela única, e normalizados em tabelas específicas depois.
 
 Utilizaremos como ferramenta de interação com o banco de dados o DBeaver 
 
@@ -44,7 +44,7 @@ Para dar a carga dos dados recuperados do site da Transparência no nosso banco 
 
 ### Tratamento dos arquivos
 
-- Baixar os dados do [site](https://www12.senado.leg.br/dados-abertos/conjuntos?portal=Administrativo&grupo=senadores). Utilizaremos o período de 2009 a 2021, por estarem mais completos e íntegros
+- Baixar os dados do [site](https://www12.senado.leg.br/transparencia/dados-abertos-transparencia/dados-abertos-ceaps). Utilizaremos o período de 2009 a 2021, por estarem mais completos e íntegros
 - Abra os arquivos `csv` e retire a primeira linha. Ela tem o seguinte formato: `"ULTIMA ATUALIZACAO";"06/08/2021 02:00"`
 
 ### Importação dos dados para o SGBD
@@ -53,7 +53,35 @@ Para dar a carga dos dados recuperados do site da Transparência no nosso banco 
 ![DBeaver SQL](images/dbeaver-sql.png)
 
 - Rode o script que está localizado em `fbd_script/ceaps.sql`. Ele criará a tabela CEAPS.
-- 
+- No Navegador de banco de dados, clique com o botão direito na tabela CEAPS, e selecione Importar dados
+
+![DBeaver - Importar dados](images/importacao-inicio.png)
+- Escolha a fonte de dados (CSV)
+
+![DBeaver - Fonte de dados CSV](images/importacao-csv.png)
+- O programa vai abrir uma janela para a escolha do arquivo. Selecione o arquivo que deseja importar:
+
+![DBeaver - Fonte de dados CSV](images/importacao-escolha-arquivo.png)
+- Informe as propriedades da importação:
+
+![DBeaver - Propriedades de importação](images/importacao-propriedades-importacao.png)
+Note que as seguintes propriedades são específicas para o nosso caso:
+ * Encoding (Traduzido de forma errada para Encodificando): ISO-8859-1
+ * Delimitador de coluna: `;`. Os dados não são separados por vírgula na fonte, e sim, por ponto-e-vírgula
+ * Definir Strings vazias para NULL: `true`. Dessa forma as colunas ficarão nulas, e não com string vazias
+ * Formato Date/Time: `dd/MM/yyyy`, para que as datas sejam importadas no formato correto
+
+
+- Mapeie as colunas do CSV com as colunas da tabela. Atenção para a coluna `DATA`, que deve ser mapeada para `DATA_REEMBOLSO`
+
+![DBeaver - Mapeamento das colunas](images/importacao-mapeamento-colunas.png)
+
+- Avance no Wizard até o resumo, e confira as especificações que foram definidas:
+
+![DBeaver - Resumo da importação](images/importacao-resumo.png)
+
+- Conclua o procedimento, e os dados serão carregados na tabela CEAPS
+
 
 
 
