@@ -87,7 +87,7 @@ Note que as seguintes propriedades são específicas para o nosso caso:
 
 Consultas
 - Quais senadores mais gastaram em cada legislatura.
-- Quais são os maiores tipos de despesas (view).
+- Quais são os maiores tipos de despesas (view) por mandato de senador (agregar legislaturas).
 - Quem é o fornecedor que mais ganhou dinheiro e quais senadores mais usaram aquele fornecedor.
 - Para um mesmo tipo de despesa e um mesmo fornedor, verificar se há divergências nos preços cobrados de cada senador.
 - Quais são os partidos que mais gastam.
@@ -95,7 +95,7 @@ Consultas
 
 Procedure
 - obter 2 arquivos CSV: um para os senadores e outro com os dados de despesas;
-- realizar a transformação dos dados extraídos;
+- realizar a transformação dos dados extraídos (separar mandato e legislatura no arquivo de depesas);
 - realizar a carga inicial das informações extraídas por meio do CSV;
 - atualizar base de dados a cada inserção de nova informação.
 
