@@ -93,5 +93,10 @@ Consultas
 - Quais são os partidos que mais gastam.
 - Evolução de percentual de parlamentares de cada gênero por legislatura.
 
+Procedure
+- Procedure para atualizar base de dados a cada extração de nova informação.
 
+Trigger
+- A cada insert na tabela CEAPS, verificar se já existe uma despesa com código de documento já cadastrado. Se não tiver, insere. Se tiver, informa à aplicação.
+- 
 
