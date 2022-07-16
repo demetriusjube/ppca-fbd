@@ -94,11 +94,10 @@ Consultas
 - Evolução de percentual de parlamentares de cada gênero por legislatura.
 
 Procedure
-- Procedure para:
--- obter 2 arquivos CSV: um para os senadores e outro com os dados de despesas;
--- realizar a transformação dos dados extraídos;
--- realizar a carga inicial das informações extraídas por meio do CSV;
--- atualizar base de dados a cada inserção de nova informação.
+- obter 2 arquivos CSV: um para os senadores e outro com os dados de despesas;
+- realizar a transformação dos dados extraídos;
+- realizar a carga inicial das informações extraídas por meio do CSV;
+- atualizar base de dados a cada inserção de nova informação.
 
 Trigger
 - A cada insert na tabela CEAPS, verificar se já existe uma despesa com código de documento já cadastrado. Se não tiver, trigger chama procedure. Se tiver, informa à aplicação.
