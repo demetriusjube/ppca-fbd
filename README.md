@@ -102,7 +102,7 @@ Procedure
  - Carga a partir de CSV.  
  - Realizar a transformação dos dados extraídos (separar mandato e legislatura no arquivo de depesas).
  - Realizar a carga inicial das informações extraídas por meio do CSV.
- - Atualizar base de dados a cada inserção de nova informação.
+ - A cada chamada, ler toda a tabela e tratar os dados novos.
  
 
 Trigger
