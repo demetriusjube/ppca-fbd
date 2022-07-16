@@ -85,27 +85,27 @@ Note que as seguintes propriedades são específicas para o nosso caso:
 
 --------
 
-Consultas
-- Quais senadores mais gastaram em cada legislatura.
-- Quais são os maiores tipos de despesas (view) por mandato de senador (agregar legislaturas).
+Consultas 
+- Quais são os maiores tipos de despesas (view) por mandato de senador (agregar legislaturas). (Ricardo)
+- Quais senadores mais gastaram em cada legislatura. 
 - Quem é o fornecedor que mais ganhou dinheiro e quais senadores mais usaram aquele fornecedor.
 - Para um mesmo tipo de despesa e um mesmo fornedor, verificar se há divergências nos preços cobrados de cada senador.
 - Quais são os partidos que mais gastam.
 - Evolução de percentual de parlamentares de cada gênero por legislatura.
 
 Procedure
-- Senador
+- Senador (Ricardo)
   - Carga a partir de CSV.
   - Realizar o tratamento de inserção de novos senadores.
   - Para cada registro, o senador está na base? Ele já tem mandato? 
-- Despesas
+- Despesas (Jubé)
   - Carga a partir de CSV.  
   - Realizar a transformação dos dados extraídos (separar mandato e legislatura no arquivo de depesas).
   - Realizar a carga inicial das informações extraídas por meio do CSV.
   - A cada chamada, ler toda a tabela e tratar os dados novos.
  
 
-Trigger
+Trigger (Jubé)
 - A cada insert na tabela carga_senador, verificar se já existe o registro do sernador e chamar a procedure de tratar senador. 
 
 
