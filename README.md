@@ -95,14 +95,14 @@ Consultas
 
 Procedure
 - Senador
- - Carga a partir de CSV.
- - Realizar o tratamento de inserção de novos senadores.
- - Para cada registro, o senador está na base? Ele já tem mandato? 
+  - Carga a partir de CSV.
+  - Realizar o tratamento de inserção de novos senadores.
+  - Para cada registro, o senador está na base? Ele já tem mandato? 
 - Despesas
- - Carga a partir de CSV.  
- - Realizar a transformação dos dados extraídos (separar mandato e legislatura no arquivo de depesas).
- - Realizar a carga inicial das informações extraídas por meio do CSV.
- - A cada chamada, ler toda a tabela e tratar os dados novos.
+  - Carga a partir de CSV.  
+  - Realizar a transformação dos dados extraídos (separar mandato e legislatura no arquivo de depesas).
+  - Realizar a carga inicial das informações extraídas por meio do CSV.
+  - A cada chamada, ler toda a tabela e tratar os dados novos.
  
 
 Trigger
