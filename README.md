@@ -44,12 +44,21 @@ Para dar a carga dos dados recuperados do site da Transparência no nosso banco 
 
 ### Criação das tabelas do banco de dados
 
-Vamos criar os objetos de banco necessários para que possamos receber os dados e tratá-los para obter as informações que queremos. O script de criação dos dados está em `fbd_scripts/fbd.sql`, e vai gerar o banco de dados da figura abaixo:
+Vamos criar os objetos de banco necessários para que possamos receber os dados e tratá-los para obter as informações que queremos. O script de criação dos dados está em `fbd_scripts/fbd-tables.sql`, e vai gerar o banco de dados da figura abaixo:
 
 ![Modelo de dados](images/modelo-dados.png)
 
+Para rodar o script, faça o seguinte roteiro:
 
-### Dados de despesa
+- No DBeaver, clique com o botão direito em cima do banco `fbd` e abra um Editor SQL:
+
+![DBeaver SQL](images/dbeaver-sql.png)
+
+- Rode o script mencionado acima. Ele criará toda a estrutura apresentada no modelo.
+
+Além de criar a estrutura de tabelas, o script também carrega a tabela  _Legislatura_ , que já tem valores conhecidos para o nosso problema.
+
+### Dados brutos de despesa
 
 #### Tratamento dos arquivos
 
@@ -58,22 +67,22 @@ Vamos criar os objetos de banco necessários para que possamos receber os dados 
 
 #### Importação dos dados para o SGBD
 
-- Crie a tabela CARGA_DESPESA no banco de dados `fbd`. Para isso, clique com o botão direito e abra um Editor SQL:
-![DBeaver SQL](images/dbeaver-sql.png)
-
-- Rode o script que está localizado em `fbd_script/carga-despesa.sql`. Ele criará a tabela CARGA_DESPESA.
 - No Navegador de banco de dados, clique com o botão direito na tabela CARGA_DESPESA, e selecione Importar dados
 
 ![DBeaver - Importar dados](images/importacao-inicio.png)
+
 - Escolha a fonte de dados (CSV)
 
 ![DBeaver - Fonte de dados CSV](images/importacao-csv.png)
+
 - O programa vai abrir uma janela para a escolha do arquivo. Selecione o arquivo que deseja importar:
 
 ![DBeaver - Fonte de dados CSV](images/importacao-escolha-arquivo.png)
+
 - Informe as propriedades da importação:
 
 ![DBeaver - Propriedades de importação](images/importacao-propriedades-importacao.png)
+
 Note que as seguintes propriedades são específicas para o nosso caso:
   * Encoding (Traduzido de forma errada para Encodificando): ISO-8859-1
   * Delimitador de coluna: `;`. Os dados não são separados por vírgula na fonte, e sim, por ponto-e-vírgula
@@ -112,6 +121,19 @@ O portal do Senado não possui um arquivo pronto com os dados dos Senadores das 
 - Retire os caracteres `  *` (dois espaços em branco e um asterisco) da massa de dados. Esse sinal gráfico é pra representar os suplentes que entraram em exercício, e podem impedir que os senadores sejam identificados corretamente. 
 
 #### Importação dos dados para o SGBD
+
+Assim como foi feito para os dados de despesa, os dados de Senadores também devem ser importados utilizando o DBeaver. Repita os passos que foram feitos para a tabela `CARGA_DESPESA`, tendo o cuidado de mapear as colunas do CSV corretamente. 
+
+Há, porém, uma diferença. A tabela `CARGA_SENADOR` possui uma  _trigger_ que vai disparar a cada registro, populando as tabelas `SENADOR`, `MANDATO` e `MANDATO_LEGISLATURA`. A lógica desse gatilho vai fazer a seguinte lógica:
+
+- Verificar se já existe um Senador com aquele nome na tabela `SENADOR`. Em caso negativo, incluir. Caso exista, recuperar o ID_SENADOR dele
+- Verificar se os dados de mandato já estão cadastrados para aquele Senador. Caso esteja, não precisa fazer nada. Caso contrário, fazer o seguinte:
+  - Inserir o dado do Mandato
+  - Para aquele mandato, vincular às respectivas legislaturas, através da tabela `MANDATO_LEGISLATURA` 
+
+### Processo de ETL das despesas
+
+Uma vez que os dados brutos já estão cadastrados na base, faremos o processo de normalização dos dados de despesa dentro do nosso modelo. 
 
 --------
 
