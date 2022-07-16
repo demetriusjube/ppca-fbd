@@ -94,7 +94,7 @@ Consultas
 - Evolução de percentual de parlamentares de cada gênero por legislatura.
 
 Procedure
-- - obter 2 arquivos CSV: um para os senadores e outro com os dados de despesas;
+  - obter 2 arquivos CSV: um para os senadores e outro com os dados de despesas;
 - realizar a transformação dos dados extraídos (separar mandato e legislatura no arquivo de depesas);
 - realizar a carga inicial das informações extraídas por meio do CSV;
 - atualizar base de dados a cada inserção de nova informação.
