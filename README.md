@@ -40,20 +40,29 @@ Pra acessar com mais facilidade o banco de dados e permitir uma importação com
 
 ## Importação dos dados
 
-Para dar a carga dos dados recuperados do site da Transparência no nosso banco de dados, precisaremos fazer a preparação dos dados dos arquivos e a importação no SGBD. Os passos serão descritos abaixo:
+Para dar a carga dos dados recuperados do site da Transparência no nosso banco de dados, precisaremos fazer a preparação dos dados dos arquivos e a importação no SGBD. Veremos todos os passos a seguir.
 
-### Tratamento dos arquivos
+### Criação das tabelas do banco de dados
+
+Vamos criar os objetos de banco necessários para que possamos receber os dados e tratá-los para obter as informações que queremos. O script de criação dos dados está em `fbd_scripts/fbd.sql`, e vai gerar o banco de dados da figura abaixo:
+
+![Modelo de dados](images/modelo-dados.png)
+
+
+### Dados de despesa
+
+#### Tratamento dos arquivos
 
 - Baixar os dados do [site](https://www12.senado.leg.br/transparencia/dados-abertos-transparencia/dados-abertos-ceaps). Utilizaremos o período de 2009 a 2021, por estarem mais completos e íntegros
 - Abra os arquivos `csv` e retire a primeira linha. Ela tem o seguinte formato: `"ULTIMA ATUALIZACAO";"06/08/2021 02:00"`
 
-### Importação dos dados para o SGBD
+#### Importação dos dados para o SGBD
 
-- Crie a tabela CEAPS no banco de dados `fbd`. Para isso, clique com o botão direito e abra um Editor SQL:
+- Crie a tabela CARGA_DESPESA no banco de dados `fbd`. Para isso, clique com o botão direito e abra um Editor SQL:
 ![DBeaver SQL](images/dbeaver-sql.png)
 
-- Rode o script que está localizado em `fbd_script/ceaps.sql`. Ele criará a tabela CEAPS.
-- No Navegador de banco de dados, clique com o botão direito na tabela CEAPS, e selecione Importar dados
+- Rode o script que está localizado em `fbd_script/carga-despesa.sql`. Ele criará a tabela CARGA_DESPESA.
+- No Navegador de banco de dados, clique com o botão direito na tabela CARGA_DESPESA, e selecione Importar dados
 
 ![DBeaver - Importar dados](images/importacao-inicio.png)
 - Escolha a fonte de dados (CSV)
@@ -66,10 +75,10 @@ Para dar a carga dos dados recuperados do site da Transparência no nosso banco 
 
 ![DBeaver - Propriedades de importação](images/importacao-propriedades-importacao.png)
 Note que as seguintes propriedades são específicas para o nosso caso:
- * Encoding (Traduzido de forma errada para Encodificando): ISO-8859-1
- * Delimitador de coluna: `;`. Os dados não são separados por vírgula na fonte, e sim, por ponto-e-vírgula
- * Definir Strings vazias para NULL: `true`. Dessa forma as colunas ficarão nulas, e não com string vazias
- * Formato Date/Time: `dd/MM/yyyy`, para que as datas sejam importadas no formato correto
+  * Encoding (Traduzido de forma errada para Encodificando): ISO-8859-1
+  * Delimitador de coluna: `;`. Os dados não são separados por vírgula na fonte, e sim, por ponto-e-vírgula
+  * Definir Strings vazias para NULL: `true`. Dessa forma as colunas ficarão nulas, e não com string vazias
+  * Formato Date/Time: `dd/MM/yyyy`, para que as datas sejam importadas no formato correto
 
 
 - Mapeie as colunas do CSV com as colunas da tabela. Atenção para a coluna `DATA`, que deve ser mapeada para `DATA_REEMBOLSO`
@@ -80,8 +89,29 @@ Note que as seguintes propriedades são específicas para o nosso caso:
 
 ![DBeaver - Resumo da importação](images/importacao-resumo.png)
 
-- Conclua o procedimento, e os dados serão carregados na tabela CEAPS
+- Conclua o procedimento, e os dados serão carregados na tabela CARGA_DESPESA
 
+### Dados dos Senadores
+
+O portal do Senado não possui um arquivo pronto com os dados dos Senadores das legislaturas anteriores. Sendo assim, será necessário recuperar esses dados através dos dados que estão nas páginas HTML e formatá-los como CSVs para importação no banco.
+
+#### Tratamento dos arquivos
+
+- Entre no endereço que contém as [legislaturas](https://www25.senado.leg.br/web/senadores/legislaturas-anteriores) do Senado Federal
+- Escolha a legislatura que será importada. No caso em tela, faremos isso para as legislaturas de 53 a 55
+- Em  _Organizar por_ , selecione a opção  _Sexo_ 
+- Selecione os nomes na tela e copie as informações
+- Abra um editor de planilhas da sua preferência e cole as informações nele
+- Acrescente duas colunas à direita dos dados: `Sexo` e `Legislatura`
+- Preencha o valor da coluna `Sexo` de acordo com o o grupo
+- Preencha o valor da coluna `Legislatura` com o número da legislatura pesquisada
+- Apague as linhas que contém os valores Masculino e Feminino
+- Repita o procedimento para cada legislatura
+- Ao terminar de importar os dados das legislaturas anteriores, vá até o endereço da (legislatura atual)[https://www25.senado.leg.br/web/senadores/em-exercicio/-/e/por-sexo]
+- Faça o mesmo tratamento que foi feito para as legislaturas anteriores
+- Retire os caracteres `  *` (dois espaços em branco e um asterisco) da massa de dados. Esse sinal gráfico é pra representar os suplentes que entraram em exercício, e podem impedir que os senadores sejam identificados corretamente. 
+
+#### Importação dos dados para o SGBD
 
 --------
 
