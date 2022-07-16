@@ -133,7 +133,9 @@ Há, porém, uma diferença. A tabela `CARGA_SENADOR` possui uma  _trigger_ que 
 
 ### Processo de ETL das despesas
 
-Uma vez que os dados brutos já estão cadastrados na base, faremos o processo de normalização dos dados de despesa dentro do nosso modelo. 
+Uma vez que os dados brutos já estão cadastrados na base, faremos o processo de normalização dos dados de despesa dentro do nosso modelo. O objeto responsável por fazer essa transformação é a procedure `PRC_ETL_DESPESA`. 
+
+
 
 --------
 
