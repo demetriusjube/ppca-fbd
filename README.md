@@ -94,13 +94,18 @@ Consultas
 - Evolução de percentual de parlamentares de cada gênero por legislatura.
 
 Procedure
-  - obter 2 arquivos CSV: um para os senadores e outro com os dados de despesas;
-- realizar a transformação dos dados extraídos (separar mandato e legislatura no arquivo de depesas);
-- realizar a carga inicial das informações extraídas por meio do CSV;
-- atualizar base de dados a cada inserção de nova informação.
-- 
+- Senador
+ - Carga a partir de CSV.
+ - Realizar o tratamento de inserção de novos senadores.
+ - Para cada registro, o senador está na base? Ele já tem mandato? 
+- Despesas
+ - Carga a partir de CSV.  
+ - Realizar a transformação dos dados extraídos (separar mandato e legislatura no arquivo de depesas).
+ - Realizar a carga inicial das informações extraídas por meio do CSV.
+ - Atualizar base de dados a cada inserção de nova informação.
+ 
 
 Trigger
-- A cada insert na tabela CEAPS, verificar se já existe uma despesa com código de documento já cadastrado. Se não tiver, trigger chama procedure. Se tiver, informa à aplicação.
+- A cada insert na tabela carga_senador, verificar se já existe o registro do sernador e chamar a procedure de tratar senador. 
 
 
