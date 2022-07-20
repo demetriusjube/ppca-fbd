@@ -16,7 +16,7 @@ BEGIN
 	DECLARE idFornecedor bigint DEFAULT NULL;
 	DECLARE idTipoDespesa bigint DEFAULT NULL;
 	DECLARE cpfCnpjLimpo varchar(20) DEFAULT '';
-    DECLARE total INT;
+    DECLARE total INT DEFAULT 0;
     DECLARE done BOOLEAN DEFAULT false;
     DECLARE curs CURSOR FOR 
     	SELECT ANO, MES, SENADOR, TIPO_DESPESA, CNPJ_CPF, FORNECEDOR, DOCUMENTO, DATA_REEMBOLSO, DETALHAMENTO, VALOR_REEMBOLSADO, COD_DOCUMENTO 
@@ -48,9 +48,9 @@ BEGIN
 			-- Verifica se foi informado um fornecedor
 			IF (v_cnpjCpf IS NOT NULL AND TRIM(v_cnpjCpf) <> '') THEN
 			-- Verifica se o fornecedor já está na base. Se não estiver, insere
-				SET cpfCnpjLimpo = REPLACE(REPLACE(REPLACE(v_cnpjCPf, '.', ''),'-',''),'/','');
+				SET cpfCnpjLimpo = TRIM(REPLACE(REPLACE(REPLACE(v_cnpjCPf, '.', ''),'-',''),'/',''));
 				-- SELECT CONCAT('Verificando fornecedor com cpfCnpj ', cpfCnpjLimpo);
-				SELECT ID_FORNECEDOR INTO idFornecedor FROM FORNECEDOR WHERE CPF_CNPJ = cpfCnpjLimpo COLLATE utf8mb4_0900_as_ci;
+				SELECT ID_FORNECEDOR INTO idFornecedor FROM FORNECEDOR WHERE TRIM(CPF_CNPJ) = cpfCnpjLimpo COLLATE utf8mb4_0900_as_ci;
 				-- SELECT CONCAT('Fornecedor: ', idFornecedor);
 				IF (idFornecedor IS NULL) THEN
 					INSERT INTO FORNECEDOR (NOME, CPF_CNPJ) VALUES (v_fornecedor, cpfCnpjLimpo);
@@ -61,7 +61,7 @@ BEGIN
 		
 			-- Verifica se o tipo de despesa já está na base
 			-- SELECT CONCAT('Verificando tipo de despesa', v_tipoDespesa);
-			SELECT ID_TIPO_DESPESA INTO idTipoDespesa FROM TIPO_DESPESA WHERE UPPER(DESCRICAO) = TRIM(UPPER(v_tipoDespesa)) COLLATE utf8mb4_0900_as_ci;
+			SELECT ID_TIPO_DESPESA INTO idTipoDespesa FROM TIPO_DESPESA WHERE TRIM(UPPER(DESCRICAO)) = TRIM(UPPER(v_tipoDespesa)) COLLATE utf8mb4_0900_as_ci;
 			-- SELECT CONCAT('Tipo de despesa: ', idFornecedor);
 			IF (idTipoDespesa IS NULL) THEN
 				INSERT INTO TIPO_DESPESA (DESCRICAO) VALUES (v_tipoDespesa);
@@ -71,11 +71,12 @@ BEGIN
 			
 			-- SELECT CONCAT ('Ano: ', v_ano);
 			-- Insere os dados na tabela DESPESA
-			INSERT INTO DESPESA (ANO, MES, ID_SENADOR, ID_FORNECEDOR, ID_TIPO_DESPESA, DATA_REEMBOLSO, DETALHAMENTO , DOCUMENTO, COD_DOCUMENTO)
-			VALUES (v_ano, v_mes, idSenador, idFornecedor, idTipoDespesa, v_dataReembolso, v_detalhamento ,v_documento, v_codDocumento);
+			INSERT INTO DESPESA (ANO, MES, ID_SENADOR, ID_FORNECEDOR, ID_TIPO_DESPESA, DATA_REEMBOLSO, DETALHAMENTO , DOCUMENTO, COD_DOCUMENTO, VALOR_REEMBOLSADO)
+			VALUES (v_ano, v_mes, idSenador, idFornecedor, idTipoDespesa, v_dataReembolso, v_detalhamento ,v_documento, v_codDocumento, v_valorReembolsado);
 			-- Limpa as variáveis para garantir que a verificação será feita corretamente
 			SET idFornecedor = NULL;
 			SET idTipoDespesa = NULL;
+			SET total = total +1;
 			
 			
 			COMMIT;
@@ -85,7 +86,7 @@ BEGIN
 
 	END LOOP;
     CLOSE curs;
-    SELECT 'Importação terminada!'; 
+    SELECT CONCAT('Importação terminada! ', total, ' registros importados!'); 
    
 
 END
