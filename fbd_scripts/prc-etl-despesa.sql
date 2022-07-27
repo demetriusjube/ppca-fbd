@@ -2,21 +2,21 @@ Delimiter $$
 
 CREATE DEFINER=`root`@`%` PROCEDURE `fbd`.`PRC_ETL_DESPESA`()
 BEGIN
-	DECLARE v_ano smallint DEFAULT 0;
+    DECLARE v_ano smallint DEFAULT 0;
     DECLARE v_mes tinyint DEFAULT 0;
     DECLARE v_senador varchar(255) DEFAULT '';
     DECLARE v_tipoDespesa varchar(255) DEFAULT '';
     DECLARE v_cnpjCpf VARCHAR(20) DEFAULT '';
-	DECLARE v_fornecedor varchar(255) DEFAULT '';
-	DECLARE v_documento varchar(255) DEFAULT '';
-	DECLARE v_dataReembolso DATE ;
-	DECLARE v_detalhamento varchar(255) DEFAULT '';
-	DECLARE v_valorReembolsado decimal(15,2) ;
-	DECLARE v_codDocumento varchar(100) ;
-	DECLARE idSenador bigint DEFAULT 0;
-	DECLARE idFornecedor bigint DEFAULT NULL;
-	DECLARE idTipoDespesa bigint DEFAULT NULL;
-	DECLARE cpfCnpjLimpo varchar(20) DEFAULT '';
+    DECLARE v_fornecedor varchar(255) DEFAULT '';
+    DECLARE v_documento varchar(255) DEFAULT '';
+    DECLARE v_dataReembolso DATE ;
+    DECLARE v_detalhamento varchar(255) DEFAULT '';
+    DECLARE v_valorReembolsado decimal(15,2) ;
+    DECLARE v_codDocumento varchar(100) ;
+    DECLARE idSenador bigint DEFAULT 0;
+    DECLARE idFornecedor bigint DEFAULT NULL;
+    DECLARE idTipoDespesa bigint DEFAULT NULL;
+    DECLARE cpfCnpjLimpo varchar(20) DEFAULT '';
     DECLARE total INT DEFAULT 0;
     DECLARE done BOOLEAN DEFAULT false;
     DECLARE curs CURSOR FOR 
@@ -26,13 +26,13 @@ BEGIN
     		SELECT COD_DOCUMENTO COLLATE utf8mb4_0900_as_ci AS COD FROM DESPESA
     	) AND SENADOR IN (
     		SELECT DISTINCT s.NOME COLLATE utf8mb4_0900_as_ci AS NOME_SENADOR FROM SENADOR s);
-    DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
+                DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
    	
     SELECT CONCAT('TOTAL DE REGISTROS: ',FOUND_ROWS()); 
-	SELECT 'Iniciando cadastro...';
+    SELECT 'Iniciando cadastro...';
     OPEN curs;
    
-	read_loop: LOOP
+    read_loop: LOOP
     #  WHILE (done != true)DO
     	SET done = false;
         FETCH curs INTO v_ano, v_mes, v_senador, v_tipoDespesa, v_cnpjCpf, v_fornecedor, v_documento, v_dataReembolso, v_detalhamento, v_valorReembolsado, v_codDocumento;
@@ -79,7 +79,6 @@ BEGIN
 			SET idTipoDespesa = NULL;
 			SET total = total +1;
 			
-			
 			COMMIT;
         END IF;
        	#  Limpa o senador para garantir outro loop
@@ -89,7 +88,6 @@ BEGIN
     CLOSE curs;
     SELECT CONCAT('Importação terminada! ', total, ' registros importados!'); 
    
-
 end
 
 $$
