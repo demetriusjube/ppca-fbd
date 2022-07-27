@@ -148,21 +148,21 @@ begin
     DECLARE v_id_senador int default 0;
     DECLARE v_id_mandato int default 0;
    
-	SELECT s.id_senador INTO v_id_senador FROM fbd.senador s WHERE TRIM(UPPER(s.nome)) = TRIM(UPPER(new.NOME)) COLLATE utf8mb4_0900_ai_ci;    
+	SELECT s.id_senador INTO v_id_senador FROM fbd.SENADOR s WHERE TRIM(UPPER(s.nome)) = TRIM(UPPER(new.NOME)) COLLATE utf8mb4_0900_ai_ci;    
 	
 	IF (v_id_senador = 0) then
-	    INSERT INTO SENADOR (NOME, SEXO) VALUES (UPPER(new.NOME), new.SEXO);
-	    SELECT s.id_senador INTO v_id_senador FROM fbd.senador s WHERE TRIM(UPPER(s.nome)) = TRIM(UPPER(new.NOME)) COLLATE utf8mb4_0900_ai_ci;
+	    INSERT INTO fbd.SENADOR (NOME, SEXO) VALUES (UPPER(new.NOME), new.SEXO);
+	    SELECT s.id_senador INTO v_id_senador FROM fbd.SENADOR s WHERE TRIM(UPPER(s.nome)) = TRIM(UPPER(new.NOME)) COLLATE utf8mb4_0900_ai_ci;
 	end if; 
    
-	SELECT m.id_mandato INTO v_id_mandato FROM fbd.mandato m WHERE m.ID_SENADOR = v_id_senador AND m.LEGISLATURA = new.legislatura;
+	SELECT m.id_mandato INTO v_id_mandato FROM fbd.MANDATO m WHERE m.ID_SENADOR = v_id_senador AND m.LEGISLATURA = new.legislatura;
  	
    IF (v_id_mandato = 0) then
     	INSERT INTO MANDATO (ID_SENADOR, ESTADO, PERIODO, LEGISLATURA, PARTIDO) VALUES (V_ID_SENADOR, new.uf, new.PERIODO, new.LEGISLATURA, new.PARTIDO);
-    	SELECT m.id_mandato INTO v_id_mandato FROM fbd.mandato m WHERE m.ID_SENADOR = v_id_senador AND m.LEGISLATURA = new.legislatura;
+    	SELECT m.id_mandato INTO v_id_mandato FROM fbd.MANDATO m WHERE m.ID_SENADOR = v_id_senador AND m.LEGISLATURA = new.legislatura;
         INSERT INTO MANDATO_LEGISLATURA (ID_MANDATO, NR_LEGISLATURA) VALUES (v_id_mandato, new.LEGISLATURA);
     end if;
-    
+
  END 
 $$
  
