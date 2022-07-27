@@ -3,14 +3,13 @@ CREATE DEFINER=`root`@`localhost` TRIGGER TRG_CARGA_SENADOR
 AFTER INSERT
 ON carga_senador FOR EACH row
 begin
-	DECLARE v_nome_senador varchar(255) default '';
     DECLARE v_id_senador int default 0;
     DECLARE v_id_mandato int default 0;
    
 	SELECT s.id_senador INTO v_id_senador FROM fbd.senador s WHERE TRIM(UPPER(s.nome)) = TRIM(UPPER(new.NOME)) COLLATE utf8mb4_0900_ai_ci;    
 	
 	IF (v_id_senador = 0) then
-		INSERT INTO SENADOR (NOME, SEXO) VALUES (new.NOME, new.SEXO);
+	    INSERT INTO SENADOR (NOME, SEXO) VALUES (new.NOME, new.SEXO);
 	    SELECT s.id_senador INTO v_id_senador FROM fbd.senador s WHERE TRIM(UPPER(s.nome)) = TRIM(UPPER(new.NOME)) COLLATE utf8mb4_0900_ai_ci;
 	end if; 
    
