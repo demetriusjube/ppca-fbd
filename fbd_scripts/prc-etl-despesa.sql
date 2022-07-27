@@ -1,6 +1,6 @@
 Delimiter $$
 
-CREATE DEFINER=`root`@`%` PROCEDURE `fbd`.`PRC_ETL_DESPESA`()
+CREATE DEFINER=`root`@`localhost` PROCEDURE `fbd`.`PRC_ETL_DESPESA`()
 BEGIN
     DECLARE v_ano smallint DEFAULT 0;
     DECLARE v_mes tinyint DEFAULT 0;
