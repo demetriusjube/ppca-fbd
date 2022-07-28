@@ -170,15 +170,15 @@ $$
 CREATE DEFINER=`root`@`%` PROCEDURE `fbd`.`PRC_ETL_DESPESA`()
 BEGIN
 
-	DECLARE v_ano smallint DEFAULT 0;
-    DECLARE v_mes tinyint DEFAULT 0;
+	DECLARE v_ano int DEFAULT 0;
+    DECLARE v_mes int DEFAULT 0;
     DECLARE v_senador varchar(255) DEFAULT '';
     DECLARE v_tipoDespesa varchar(255) DEFAULT '';
     DECLARE v_cnpjCpf VARCHAR(20) DEFAULT '';
 	DECLARE v_fornecedor varchar(255) DEFAULT '';
 	DECLARE v_documento varchar(255) DEFAULT '';
 	DECLARE v_dataReembolso DATE ;
-	DECLARE v_detalhamento varchar(255) DEFAULT '';
+	DECLARE v_detalhamento varchar(2000) DEFAULT '';
 	DECLARE v_valorReembolsado decimal(15,2) ;
 	DECLARE v_codDocumento varchar(100) ;
 	DECLARE idSenador bigint DEFAULT 0;
@@ -258,6 +258,6 @@ BEGIN
     SELECT CONCAT('Importação terminada! ', total, ' registros importados!'); 
    
 
-END $$
+END  $$
 
 delimiter ;
