@@ -11,7 +11,7 @@ services:
     ports:
       - '3306:3306'
     volumes:
-      - ./db:/var/lib/mysql
+      - /home/djube/ppca-fbd/data:/var/lib/mysql
 volumes:
   db:
     driver: local
