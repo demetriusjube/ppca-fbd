@@ -203,6 +203,19 @@ Como se pode observar, essa consulta possui vários elementos que não permitem 
 
 ![Resultado_View](images/view.png)
 
+A partir disso, foi possível obter uma visão gráfica sobre o tipo de despesa mais utilizado por cada partido no período de 2019 a 2020 (legislatura de 2019 a 2023). 
+
+![Grafico_Resultado_View](images/view-grafico.png)
+
+Nesse gráfico, fica fácil observar que, no período indicado, os tipos de despesa mais consumidos são, da ordem do maior para o menor:
+
+- Passagens aéreas, aquáticas e terrestres nacionais;
+- Contratação de consultorias, assessorias, pesquisas, trabalhos técnicos e outros serviços de apoio ao exercício do mandato parlamentar;
+- Locomoção, hospedagem, alimentação, combustíveis e lubrificantes;
+- Aluguel de imóveis para escritório político, compreendendo despesas concernentes a eles;
+- Divulgação da atividade parlamentar;
+- Aquisição de material de consumo para uso no escritório político, inclusive aquisição ou locação de software, despesas postais, aquisição de publicações, locação de móveis e de equipamentos;
+- Serviços de Segurança Privada.
 
 ### CONSULTAS
 
