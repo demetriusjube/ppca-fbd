@@ -157,12 +157,31 @@ Trigger (Ricardo)
 
 Um requisito do projeto de banco de dados era a criação de uma view. As views são consultas armazenadas que funcionam como uma tabela virtual. Os dados, de fato, não estão presentes na view, mas sim em suas tabelas de origem. A view, assim, é uma consulta e pode trazer dados de várias tabelas e utilizar todas as funções normalmente utilizadas em consultas, como group by, having, sum, count etc.
 
-Uma view pode ser atualizável ou não atualizável
+Uma view pode ser atualizável. Isso significa que ela aceita comandos que permitam a manipulação dos dados, ou seja, receber comandos de "insert", "update" ou "delete". A view recebe o comando e o direciona para a tabela física correspondente. 
 
-Existe uma cláusula importante no tratamento de views: check option.
+Essa capacidade de atualização pode gerar algumas inconsistências. Caso a view inclua condições na cláusula "where", pode ocorrer a situação em que um "insert" na view não representa a inclusão de um registro na view. Isso ocorre se o registro inserido não fizer parte da seleção ("where") realizada para formar a consulta. 
+
+Existe uma cláusula importante no tratamento de views, chamada de "with check option". Essa opção, ao ser inserida na view, realiza um controle sobre o registro a ser manipulado, relacionado à capacidade do registro participar ou não da seleção da view. Caso o registro seja retornável pela consulta da view, o SGBD impede a manipulação do registro, ou seja, ele não permite a inserção, a alteração ou a exclusão do registro.
+
+A opção "with check option" só se aplica a views que forem atualizáveis. O SGBD não permite seu uso com views não atualizáveis.
+
+Uma view será não atualizável se não houver correspondência de um para um entre um registro da tabela física e um registro da view. Algumas cláusulas de consulta também tornam a view não atualizável. O MYSQL elenca as seguintes condições para uma view ser não atualizável:
+
+- Funções de agregação (SUM(), MIN(), MAX(), COUNT() etc)
+- DISTINCT
+- GROUP BY
+- HAVING
+- UNION / UNION ALL
+- Uso de subconsulta (subquery)
+- Subconsultas não dependentes tem algumas restrições
+- Alguns joins
+- Referência à visão não atualizável na cláusula FROM
+- Subconsulta na cláusula WHERE que se refere a uma tabela na cláusula FROM
+- Não possui tabelas na consulta para atualizar
+- Uso de uma tabela temporária
+- Várias referências a qualquer coluna de uma tabela base 
 
 A view escolhida tem por objetivo
-
 Quais são os maiores tipos de despesas (view) por mandato de senador (agregar legislaturas). 
 
 
