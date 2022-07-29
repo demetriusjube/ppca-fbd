@@ -124,12 +124,7 @@ O portal do Senado não possui um arquivo pronto com os dados dos Senadores das 
 
 Assim como foi feito para os dados de despesa, os dados de Senadores também devem ser importados utilizando o DBeaver. Repita os passos que foram feitos para a tabela `CARGA_DESPESA`, tendo o cuidado de mapear as colunas do CSV corretamente. 
 
-Há, porém, uma diferença. A tabela `CARGA_SENADOR` possui uma  _trigger_ que vai disparar a cada registro, populando as tabelas `SENADOR`, `MANDATO` e `MANDATO_LEGISLATURA`. A lógica desse gatilho vai fazer a seguinte lógica:
-
-- Verificar se já existe um Senador com aquele nome na tabela `SENADOR`. Em caso negativo, incluir. Caso exista, recuperar o ID_SENADOR dele
-- Verificar se os dados de mandato já estão cadastrados para aquele Senador. Caso esteja, não precisa fazer nada. Caso contrário, fazer o seguinte:
-  - Inserir o dado do Mandato
-  - Para aquele mandato, vincular às respectivas legislaturas, através da tabela `MANDATO_LEGISLATURA` 
+Há, porém, uma diferença. A tabela `CARGA_SENADOR` possui uma  _trigger_ que vai disparar a cada registro, populando as tabelas `SENADOR`, `MANDATO` e `MANDATO_LEGISLATURA`. A lógica desse gatilho vai se explicada mais à frente.
 
 ### Processo de ETL das despesas
 
@@ -147,11 +142,22 @@ Uma vez que os dados brutos já estão cadastrados na base, faremos o processo d
 
 ### TRIGGER 
 
-Trigger (Ricardo)
-- A cada insert na tabela carga_senador, verificar se já existe o registro do sernador e chamar a procedure de tratar senador. 
-  - Carga a partir de CSV.
-  - Realizar o tratamento de inserção de novos senadores.
-  - Para cada registro, o senador está na base? Ele já tem mandato? 
+Uma "trigger" é um objeto de banco de dados ativado quando ocorre algum evento em determinada tabela. Esse eventos podem ser operações como "inserts", "updats" ou "deletes" na tabela em que a "trigger" está vinculada. É possível ativar a trigger tanto antes da operação ocorrer como depois. 
+
+As triggers requerem tabelas físicas para serem ativadas. Triggers não são permitidas em tabelas virtuais como views. Apesar disso, é possível que a trigger seja ativada, se a view for atualizável, no momento em que a a tabela física que esteja associadas à consulta da view for atualizada. Além disso, triggers são ativadas apenas por comandos SQL. Não é possível ativar a trigger com uso de APIs relacionadas à bancos de dados distribuídos. Triggers também não podem ser usadas em tabelas de sistema, como os esquemas "INFORMATION_SCHEMA" e "performance_schema".  
+
+As triggers conseguem disponibilizar os dados do registro, tanto o dado antigo a ser atualizado quanto o dado do novo registro. A trigger oferece a opção "old" para acessar o dado antigo do registro, e a opção "new" para o dado novo. Para usar, basta associar a opção ao campo, no formato old.campo ou new.campo.
+
+Triggers podem ser usadas para validar campos, calcular informações, gravar registros de auditorias, entre outros vários usos. Nossa trigger foi utilizada para realizar o tratamento dos dados recebidos pela carga de senadores provenientes do arquivo CSV. Como visto na etapa de ETL, os dados obtidos da página de dados abertos foram inseridos em "carga_senador". A cada registro inserido, a trigger TRG_CARGA_SENADOR, vinculada a essa tabela, é ativada.
+
+A trigger segue a seguinte lógica: 
+
+- Primerio ela verifica se já existe um senador, na tabela "senador", com aquele nome recebido do CSV, e armazena o identificador em uma variável;
+- Caso o senador não exista, ele é inserido na tabela "senador" e depois é feito um "select" para manter o identificador em uma variável;
+- Em seguida, é verificado se o mandato recebido pelo CSV existe para aquele servidor. O mandato é mantido por legislatura, então, para cada senador, haverá pelo menos dois registros na tabela mandato;
+- É realizada uma operação para selecionar e identificar o identificador do mandato em uma variável;
+- Para cada mandato inserido, é necessário fazer o vínculo dele com a legislatura na tabela "MANDATO_LEGISLATURA". Um novo registro é inserido nessa tabela para manter essa informação.
+
 
 ### VIEW
 
