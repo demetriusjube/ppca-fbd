@@ -22,6 +22,7 @@ from (
 	) u2, fbd.senador s1, fbd.senador s2
 where u1.id_fornecedor = u2.id_fornecedor and u1.id_tipo_despesa = u2.id_tipo_despesa and u1.id_senador != u2.id_senador and
       u1.id_senador = s1.ID_SENADOR and u2.id_senador = s2.id_senador and 
-      u1.nr_parcelas = u2.nr_parcelas
+      u1.nr_parcelas = u2.nr_parcelas and
+      ((u1.valor_medio > (u2.valor_medio*10)) OR (u2.valor_medio > (u1.valor_medio*10)))
 
 
