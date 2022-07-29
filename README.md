@@ -201,7 +201,7 @@ ORDER BY m.PERIODO DESC, td.descricao, VALOR_TOTAL DESC;
 
 Como se pode observar, essa consulta possui vários elementos que não permitem que essa view seja atualizável. Dentre eles, vê-se o uso de cláusulas group by e que não existe correspondência de um-para-um com uma tabela física. A saída dessa consulta por ser vista abaixo, com a apresentação dos seus primeiros registros:
 
-![Resultado_View](images/view.PNG)
+![Resultado_View](images/view.png)
 
 
 ### CONSULTAS
