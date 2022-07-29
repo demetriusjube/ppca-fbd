@@ -181,8 +181,7 @@ Uma view será não atualizável se não houver correspondência de um para um e
 - Uso de uma tabela temporária
 - Várias referências a qualquer coluna de uma tabela base 
 
-A view escolhida tem por objetivo
-Quais são os maiores tipos de despesas (view) por mandato de senador (agregar legislaturas). 
+A view escolhida tem por objetivo identificar quais são os maiores tipos de despesas w) por mandato de senador (agregar legislaturas). 
 
 
 ### CONSULTAS
