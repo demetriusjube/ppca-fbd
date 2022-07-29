@@ -181,7 +181,23 @@ Uma view será não atualizável se não houver correspondência de um para um e
 - Uso de uma tabela temporária
 - Várias referências a qualquer coluna de uma tabela base 
 
-A view escolhida tem por objetivo identificar quais são os maiores tipos de despesas w) por mandato de senador (agregar legislaturas). 
+A view escolhida tem por objetivo identificar quais são os maiores tipos de despesas por legislatura e por partido. Vale ressaltar que uma legislatura é um período de quatro anos. A partir desse objetivos, a seguinte consulta foi materializada:
+
+```
+CREATE OR REPLACE VIEW fbd.VW_DESPESA_POR_LEGISLATURA AS
+SELECT TD.DESCRICAO AS DESCRICAO_DESPESA, CONCAT(L.ANO_INICIO, " - ", L.ANO_FIM) AS LEGISLATURA, 
+       SUM(D.VALOR_REEMBOLSADO) AS VALOR_TOTAL, m.PARTIDO 
+FROM fbd.TIPO_DESPESA TD, fbd.DESPESA D, fbd.MANDATO M, 
+     fbd.LEGISLATURA L, fbd.MANDATO_LEGISLATURA ML   
+WHERE TD.ID_TIPO_DESPESA = D.ID_TIPO_DESPESA AND 
+      D.ID_SENADOR = M.ID_SENADOR  AND
+      M.ID_MANDATO = ML.ID_MANDATO AND 
+      M.LEGISLATURA = ML.NR_LEGISLATURA AND 
+      ML.NR_LEGISLATURA = L.NR_LEGISLATURA # AND 
+      #(D.ANO BETWEEN L.ANO_INICIO AND L.ANO_FIM)
+GROUP BY TD.ID_TIPO_DESPESA, m.periodo, m.PARTIDO 
+ORDER BY m.PERIODO DESC, td.descricao, VALOR_TOTAL DESC;
+´´´
 
 
 ### CONSULTAS
