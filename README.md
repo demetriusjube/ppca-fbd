@@ -137,17 +137,13 @@ Uma vez que os dados brutos já estão cadastrados na base, faremos o processo d
 
 ## MANIPULAÇÃO DE DADOS
 
-### CONSULTAS
+### PROCEDURE
 
-#### CONSULTA 1 - Quais senadores mais gastaram em cada legislatura. (Marcos) 
-#### CONSULTA 2 - Quem é o fornecedor que mais ganhou dinheiro e quais senadores mais contrataram um dado fornecedor. (Marcos)
-#### CONSULTA 3 - Para um mesmo tipo de despesa e um mesmo fornedor, verificar se há divergências nos preços cobrados de cada senador. (Ricardo)
-#### CONSULTA 4 - Quantidade média de gastos por senador e por partido. (Marcos)
-#### CONSULTA 5 - Evolução de percentual de parlamentares de cada gênero por legislatura. (Marcos)
-
-### VIEW
-
-Quais são os maiores tipos de despesas (view) por mandato de senador (agregar legislaturas). (Ricardo)
+- Despesas (Jubé)
+  - Carga a partir de CSV.  
+  - Realizar a transformação dos dados extraídos (separar mandato e legislatura no arquivo de depesas).
+  - Realizar a carga inicial das informações extraídas por meio do CSV.
+  - A cada chamada, ler toda a tabela e tratar os dados novos.
 
 ### TRIGGER 
 
@@ -157,10 +153,24 @@ Trigger (Ricardo)
   - Realizar o tratamento de inserção de novos senadores.
   - Para cada registro, o senador está na base? Ele já tem mandato? 
 
-### PROCEDURE
+### VIEW
 
-- Despesas (Jubé)
-  - Carga a partir de CSV.  
-  - Realizar a transformação dos dados extraídos (separar mandato e legislatura no arquivo de depesas).
-  - Realizar a carga inicial das informações extraídas por meio do CSV.
-  - A cada chamada, ler toda a tabela e tratar os dados novos.
+Um requisito do projeto de banco de dados era a criação de uma view. As views são consultas armazenadas que funcionam como uma tabela virtual. Os dados, de fato, não estão presentes na view, mas sim em suas tabelas de origem. A view, assim, é uma consulta e pode trazer dados de várias tabelas e utilizar todas as funções normalmente utilizadas em consultas, como group by, having, sum, count etc.
+
+Uma view pode ser atualizável ou não atualizável
+
+Existe uma cláusula importante no tratamento de views: check option.
+
+A view escolhida tem por objetivo
+
+Quais são os maiores tipos de despesas (view) por mandato de senador (agregar legislaturas). 
+
+
+### CONSULTAS
+
+#### CONSULTA 1 - Quais senadores mais gastaram em cada legislatura. (Marcos) 
+#### CONSULTA 2 - Quem é o fornecedor que mais ganhou dinheiro e quais senadores mais contrataram um dado fornecedor. (Marcos)
+#### CONSULTA 3 - Para um mesmo tipo de despesa e um mesmo fornedor, verificar se há divergências nos preços cobrados de cada senador. (Ricardo)
+#### CONSULTA 4 - Quantidade média de gastos por senador e por partido. (Marcos)
+#### CONSULTA 5 - Evolução de percentual de parlamentares de cada gênero por legislatura. (Marcos)
+
