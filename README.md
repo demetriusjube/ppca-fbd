@@ -148,11 +148,13 @@ As triggers requerem tabelas físicas para serem ativadas. Triggers não são pe
 
 As triggers conseguem disponibilizar os dados do registro, tanto o dado antigo a ser atualizado quanto o dado do novo registro. A trigger oferece a opção "old" para acessar o dado antigo do registro, e a opção "new" para o dado novo. Para usar, basta associar a opção ao campo, no formato old.campo ou new.campo.
 
-Triggers podem ser usadas para validar campos, calcular informações, gravar registros de auditorias, entre outros vários usos. Nossa trigger foi utilizada para realizar o tratamento dos dados recebidos pela carga de senadores provenientes do arquivo CSV. Como visto na etapa de ETL, os dados obtidos da página de dados abertos foram inseridos em "carga_senador". A cada registro inserido, a trigger TRG_CARGA_SENADOR, vinculada a essa tabela, é ativada.
+Triggers podem ser usadas para validar campos, calcular informações, gravar registros de auditorias, entre outros vários usos. Nossa trigger foi utilizada para realizar o tratamento dos dados recebidos pela carga de senadores provenientes do arquivo CSV. Como visto na etapa de ETL, os dados obtidos da página de dados abertos foram inseridos em "carga_senador". A cada registro inserido, a trigger TRG_CARGA_SENADOR, vinculada a essa tabela, é ativada. A tabela "carga_senador" pode ser vista abaixo:
+
+![Tabela_Carga_Senador](images/carga-senador.png)
 
 A trigger segue a seguinte lógica: 
 
-- Primerio ela verifica se já existe um senador, na tabela "senador", com aquele nome recebido do CSV, e armazena o identificador em uma variável;
+- Primero, ela verifica se já existe um senador, na tabela "senador", com aquele nome recebido do CSV, e armazena o identificador em uma variável;
 - Caso o senador não exista, ele é inserido na tabela "senador" e depois é feito um "select" para manter o identificador em uma variável;
 - Em seguida, é verificado se o mandato recebido pelo CSV existe para aquele servidor. O mandato é mantido por legislatura, então, para cada senador, haverá pelo menos dois registros na tabela mandato;
 - É realizada uma operação para selecionar e identificar o identificador do mandato em uma variável;
@@ -196,6 +198,8 @@ begin
     
  END 
 ```
+
+
 
 ### VIEW
 
