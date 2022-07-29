@@ -205,7 +205,7 @@ Como se pode observar, essa consulta possui vários elementos que não permitem 
 
 A partir disso, foi possível obter uma visão gráfica sobre o tipo de despesa mais utilizado por cada partido no período de 2019 a 2020 (legislatura de 2019 a 2023). 
 
-![Grafico_Resultado_View](images/view-grafico.png )
+![Grafico_Resultado_View](images/view-grafico-2019-2020.png)
 
 Nesse gráfico, fica fácil observar que, no período indicado, os tipos de despesa mais consumidos são, da ordem do maior para o menor:
 
