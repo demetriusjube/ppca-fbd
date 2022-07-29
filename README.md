@@ -185,7 +185,8 @@ A view escolhida tem por objetivo identificar quais são os maiores tipos de des
 
 ```
 CREATE OR REPLACE VIEW fbd.VW_DESPESA_POR_LEGISLATURA AS
-SELECT TD.DESCRICAO AS DESCRICAO_DESPESA, CONCAT(L.ANO_INICIO, " - ", L.ANO_FIM) AS LEGISLATURA, 
+SELECT td.id_tipo_despesa, TD.DESCRICAO AS DESCRICAO_DESPESA, 
+       CONCAT(L.ANO_INICIO, " - ", L.ANO_FIM) AS LEGISLATURA, 
        SUM(D.VALOR_REEMBOLSADO) AS VALOR_TOTAL, m.PARTIDO 
 FROM fbd.TIPO_DESPESA TD, fbd.DESPESA D, fbd.MANDATO M, 
      fbd.LEGISLATURA L, fbd.MANDATO_LEGISLATURA ML   
@@ -194,9 +195,8 @@ WHERE TD.ID_TIPO_DESPESA = D.ID_TIPO_DESPESA AND
       M.ID_MANDATO = ML.ID_MANDATO AND 
       M.LEGISLATURA = ML.NR_LEGISLATURA AND 
       ML.NR_LEGISLATURA = L.NR_LEGISLATURA # AND 
-      #(D.ANO BETWEEN L.ANO_INICIO AND L.ANO_FIM)
-GROUP BY TD.ID_TIPO_DESPESA, m.periodo, m.PARTIDO 
-ORDER BY m.PERIODO DESC, td.descricao, VALOR_TOTAL DESC;
+GROUP BY TD.ID_TIPO_DESPESA, ML.NR_LEGISLATURA, m.PARTIDO 
+ORDER BY legislatura DESC, td.descricao, m.partido asc;
 ```
 
 Como se pode observar, essa consulta possui vários elementos que não permitem que essa view seja atualizável. Dentre eles, vê-se o uso de cláusulas group by e que não existe correspondência de um-para-um com uma tabela física. A saída dessa consulta por ser vista abaixo, com a apresentação dos seus primeiros registros:
