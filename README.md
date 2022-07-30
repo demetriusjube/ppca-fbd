@@ -296,6 +296,12 @@ Esta consulta foi criada para verificar se um mesmo fornecedor cobrou valores si
 
 Em cada registro, então calculou-se o valor total do tipo de despesa. Po exemplo, se um aluguel foi pago por um dois anos, o total gasto nesses vinte e quatro meses foi somado. Para fins de comparação, manteve-se o número de parcelas pagas no resultado, bem como o valor médio pago. A intenção era comparar despesas equivalentes, que foram pagas pelo mesmo tempo. A comparação seria prejudicada se, de um lado, tivesse o pagamento de um mês de aluguel de um senador e, no outro senador, o pagamento de dozes meses de aluguel.
 
+Organizou-se a consulta para apresentar o fornecedor, o tipo de despesa, o primeiro senador e os valores médio e total pagos por ele e, em seguida, o segundo senador e o valor médio e total por ele. Disponibilizou-se duas colunas no final para deixar mais evidente quais senadores estavam sendo comparados na consulta.
+
+A consulta foi criada a partir de duas consultas que foram operadas para apresentarem a interseção dos resultados. Como o MYSQL não possui o operador "intersect", foi necessário realizar uma operação de junção sobre o resultado das duas primeiras consultas. Nesta junção, projetou-se apenas os dados relevantes para a apresentação final dos resultados. 
+
+As duas primeiras consultas consistem no levantamento das informações gastas de cada senador. Uma delas traz informação do primeiro senador e a outra traz a informação do segundo senador. Cada consulta faz o agrupamento dos valores por fornecedor e por tipo de despesa e traz informações de identificação dos objetos, que serão passados para a consulta maior realizar a junção corretamente. Na consulta principal, é feita uma seleção para trazer apenas os resultados em que um gasto seja pelo menos dez vezes maior 
+
 ```
 select u1.fornecedor as fornecedor, u1.despesa, 
        s1.nome as senador1, u1.valor_medio as valor_medio_senador1, 
