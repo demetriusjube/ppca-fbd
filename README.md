@@ -352,6 +352,22 @@ Foi possível observar os seguintes insights a partir do resultado da consulta:
     -  "AUTO POSTO JANE" em dois pagamentos, a título de "Locomoção, hospedagem, alimentação, combustíveis e lubrificantes": senador "VALDIR RAUPP" pagou R$ 20.557,50 enquanto o senador "IVO CASSOL" pagou R$ 154,04.
     -  "Papelaria Globo" em um pagamento, a título de "Aquisição de material de consumo para uso no escritório político, inclusive aquisição ou locação de software, despesas postais, aquisição de publicações, locação de móveis e de equipamentos": senador "SÉRGIO PETECÃO" pagou R$ 12.673,00 enquanto o senador "GERALDO MESQUITA JÚNIOR" pagou R$ 30,60.
 
+
+As variações mais significativas foram apresentadas nos gráficos abaixos.
+
+
+- Tipo de despesa "Aquisição de material de consumo para uso no escritório político, inclusive aquisição ou locação de software, despesas postais, aquisição de publicações, locação de móveis e de equipamentos":
+
+
+![Despesa_Papelaria_Globo](images/despesa-papelaria-globo.PNG)
+
+ 
+- Tipo de despesa "Locomoção, hospedagem, alimentação, combustíveis e lubrificantes":
+
+
+![Despesa_Auto_Posto_Jane](images/despesa-auto-posto-jane.PNG)
+
+
 #### CONSULTA 4 - Quantidade média de gastos por senador e por partido. (Marcos)
 
 
