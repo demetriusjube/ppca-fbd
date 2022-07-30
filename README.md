@@ -158,7 +158,7 @@ A trigger segue a seguinte lógica:
 
 - Primero, ela verifica se já existe um senador, na tabela "senador", com aquele nome recebido do CSV, e armazena o identificador em uma variável;
 - Caso o senador não exista, ele é inserido na tabela "senador" e depois é feito um "select" para manter o identificador em uma variável;
-- Em seguida, é verificado se o mandato recebido pelo CSV existe para aquele servidor. O mandato é mantido por legislatura, então, para cada senador, haverá pelo menos dois registros na tabela mandato;
+- Em seguida, é verificado se o mandato recebido pelo CSV existe para aquele servidor. O mandato é mantido por legislatura, então, para cada senador, haverá um registro na tabela mandato vinculado a duas legislaturas;
 - É realizada uma operação para selecionar e identificar o identificador do mandato em uma variável;
 - Para cada mandato inserido, é necessário fazer o vínculo dele com a legislatura na tabela "MANDATO_LEGISLATURA". Um novo registro é inserido nessa tabela para manter essa informação.
 
