@@ -350,7 +350,7 @@ Foi possível observar os seguintes insights a partir do resultado da consulta:
 - Em praticamente todos os tipos de despesa foi possível observar grandes variações de valores pagos pelos senadores para o mesmo fornecedor e mesmo número de parcelas;
 - Foram encontrados valores em que a variação entre o valor pago por por dois senadores passa de cem vezes. Alguns casos interessantes são: 
     -  "AUTO POSTO JANE" em dois pagamentos, a título de "Locomoção, hospedagem, alimentação, combustíveis e lubrificantes": senador "VALDIR RAUPP" pagou R$ 20.557,50 enquanto o senador "IVO CASSOL" pagou R$ 154,04.
-    -  "Papelaria Globo" em um pagamento, a título de "Aquisição de material de consumo para uso no escritório político, inclusive aquisição ou locação de software, despesas postais, aquisição de publicações, locação de móveis e de equipamentos": senador "SÉRGIO PETECÃO" pagou R$ 20.557,50 enquanto o senador "GERALDO MESQUITA JÚNIOR" pagou R$ 30,60.
+    -  "Papelaria Globo" em um pagamento, a título de "Aquisição de material de consumo para uso no escritório político, inclusive aquisição ou locação de software, despesas postais, aquisição de publicações, locação de móveis e de equipamentos": senador "SÉRGIO PETECÃO" pagou R$ 12.673,00 enquanto o senador "GERALDO MESQUITA JÚNIOR" pagou R$ 30,60.
 
 #### CONSULTA 4 - Quantidade média de gastos por senador e por partido. (Marcos)
 
