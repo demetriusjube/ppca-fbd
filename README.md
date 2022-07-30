@@ -300,7 +300,11 @@ Organizou-se a consulta para apresentar o fornecedor, o tipo de despesa, o prime
 
 A consulta foi criada a partir de duas consultas que foram operadas para apresentarem a interseção dos resultados. Como o MYSQL não possui o operador "intersect", foi necessário realizar uma operação de junção sobre o resultado das duas primeiras consultas. Nesta junção, projetou-se apenas os dados relevantes para a apresentação final dos resultados. 
 
-As duas primeiras consultas consistem no levantamento das informações gastas de cada senador. Uma delas traz informação do primeiro senador e a outra traz a informação do segundo senador. Cada consulta faz o agrupamento dos valores por fornecedor e por tipo de despesa e traz informações de identificação dos objetos, que serão passados para a consulta maior realizar a junção corretamente. Na consulta principal, é feita uma seleção para trazer apenas os resultados em que um gasto seja pelo menos dez vezes maior 
+As duas primeiras consultas consistem no levantamento das informações gastas de cada senador. Uma delas traz informação do primeiro senador e a outra traz a informação do segundo senador. Cada consulta faz o agrupamento dos valores por fornecedor e por tipo de despesa e traz informações de identificação dos objetos, que serão passados para a consulta maior realizar a junção corretamente. Na consulta principal, é feita uma seleção para trazer apenas os resultados em que um gasto seja pelo menos dez vezes maior que o gasto do outro senador.
+
+Um efeito colateral de se montar a consulta por meio de junção em vez de interseção é que a comparação entre dois senadores ocorre tanto do primeiro para o segundo quanto em ordem inversa, com os mesmos dados de valores da ordem direta. Entende-se que seria possível que isso não ocorresse se os dados da consulta fossem tratados por uma procedure e depois armazenados em uma tabela que verifica se o registro já tivesse sido inserido em ordem inversa. Isso, contudo, não afeta a consistência dos dados nem o objetivo da consulta, motivo pelo qual se optou por manter a consulta como está.
+
+O código da consulta pode ser visto abaixo.
 
 ```
 select u1.fornecedor as fornecedor, u1.despesa, 
@@ -334,6 +338,10 @@ where u1.id_fornecedor = u2.id_fornecedor and u1.id_tipo_despesa = u2.id_tipo_de
       u2.id_senador = s2.id_senador and u1.nr_parcelas = u2.nr_parcelas and
       ((u1.valor_medio > (u2.valor_medio*10)) OR (u2.valor_medio > (u1.valor_medio*10)))
 ```
+
+O resultado da consulta 3 pode ser visto abaixo.
+
+![Resultado_Consulta_3](images/consulta3-resultado.PNG)
 
 #### CONSULTA 4 - Quantidade média de gastos por senador e por partido. (Marcos)
 
