@@ -292,7 +292,7 @@ As consultas foram planejadas para extrair insights relevantes do conjunto de da
 
 
 
-#### CONSULTA 3 - Para um mesmo tipo de despesa e um mesmo fornedor, verificar se há divergências nos preços cobrados entre os senadores.
+#### CONSULTA 3 - Para um mesmo tipo de despesa e um mesmo fornecedor, verificar se há divergências nos preços cobrados entre os senadores.
 
 Esta consulta foi criada para verificar se um mesmo fornecedor cobrou valores significativamente diferentes de senadores diferentes para um mesmo serviço. Foi identificado, assim, quem eram os fornecedores de cada despesa realizada pelos senadores. Um senador pode realizar o mesmo tipo de despesa várias vezes no ano e em vários anos. As despesas foram agrupadas, assim, pelos tipos de despesa já apresentados quando discutiu-se a view, pelo fornecedor e por senador. 
 
