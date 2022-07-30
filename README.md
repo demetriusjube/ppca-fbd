@@ -282,6 +282,8 @@ Nesse gráfico, fica fácil observar que, no período indicado, os tipos de desp
 
 ### CONSULTAS
 
+As consultas foram planejadas para extrair insights relevantes do conjunto de dados disponível, bem como possibilitar a realização de consultas complexas com uso de operadores de agregação agrupados por múltiplos critérios, bem como junções (inclusive uma interseção), projeções e novas seleções sobre resultados de consultas.
+
 #### CONSULTA 1 - Quais senadores mais gastaram em cada legislatura. (Marcos) 
 
 
