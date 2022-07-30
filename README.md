@@ -346,7 +346,7 @@ O resultado da consulta 3 pode ser visto abaixo.
 Foi possível observar os seguintes insights a partir do resultado da consulta:
 
 - Existem despesas distintas que são agrupadas em um mesmo tipo de despesa. Essas despesas possuem ordens de grandeza muito diferentes e, idealmente, deveriam ser mantidas como tipos diferentes. Por exemplo, tanto o pagamento do aluguel de um imóvel e quanto o pagamento de um serviço de internet e telefone para o mesmo imóvel são organizados no mesmo tipo de despesa "Aluguel de imóveis para escritório político, compreendendo despesas concernentes a eles.".
-- As despesas variáveis, que variam conforme a atividade parlamentar, como serviço de telefone ou gastos com gasolina, possuem grandes diferenças de gastos entre os senadores. Enquanto o senador "Jefferson Praia" gastou R$ 11,40 com a fornecedora "Oi Fixo - Telemar Norte Leste SA", a senadora "VANESSA GRAZZIOTIN" gastou R$ 1.634,96 na mesma legislatura e em um mês. Do mesmo modo,  
+- As despesas variáveis, que variam conforme a atividade parlamentar, como serviço de telefone ou gastos com gasolina, possuem grandes diferenças de gastos entre os senadores. Enquanto o senador "Jefferson Praia" gastou R$ 11,40 com a fornecedora "Oi Fixo - Telemar Norte Leste SA", a senadora "VANESSA GRAZZIOTIN" gastou R$ 1.634,96 na mesma legislatura e em um mês. Do mesmo modo, o senador "Fernando Collor" gastou R$ 16.168,60 em quinze parcelas para "MINUTA RECEPÇOES E SERVIÇOS DE BUFFET LTDA" a título de "Locomoção, hospedagem, alimentação, combustíveis e lubrificantes", enquanto que, no mesmo período e para o mesmo fornecedor, a senadora "Marta Suplicy" gastou R$ 882,00.
 
 #### CONSULTA 4 - Quantidade média de gastos por senador e por partido. (Marcos)
 
