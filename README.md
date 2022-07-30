@@ -343,6 +343,11 @@ O resultado da consulta 3 pode ser visto abaixo.
 
 ![Resultado_Consulta_3](images/consulta3-resultado.PNG)
 
+Foi possível observar os seguintes insights a partir do resultado da consulta:
+
+- Existem despesas distintas que são agrupadas em um mesmo tipo de despesa. Essas despesas possuem ordens de grandeza muito diferentes e, idealmente, deveriam ser mantidas como tipos diferentes. Por exemplo, tanto o pagamento do aluguel de um imóvel e quanto o pagamento de um serviço de internet e telefone para o mesmo imóvel são organizados no mesmo tipo de despesa "Aluguel de imóveis para escritório político, compreendendo despesas concernentes a eles.".
+- 
+
 #### CONSULTA 4 - Quantidade média de gastos por senador e por partido. (Marcos)
 
 
