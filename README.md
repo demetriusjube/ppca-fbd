@@ -140,7 +140,7 @@ Uma vez que os dados brutos já estão cadastrados na base, faremos o processo d
   - Realizar a carga inicial das informações extraídas por meio do CSV.
   - A cada chamada, ler toda a tabela e tratar os dados novos.
 
-### TRIGGER 
+### TRIGGER TRG_CARGA_SENADOR
 
 Uma "trigger" é um objeto de banco de dados ativado quando ocorre algum evento em determinada tabela. Esse eventos podem ser operações como "inserts", "updats" ou "deletes" na tabela em que a "trigger" está vinculada. É possível ativar a trigger tanto antes da operação ocorrer como depois. 
 
@@ -216,7 +216,7 @@ Após o tratamento dos dados realizados pela trigger, pode-se verificar o result
 ![Tabela_Mandato_Legislatura](images/mandato-legislatura.PNG)
 
 
-### VIEW
+### VIEW VW_DESPESA_POR_LEGISLATURA
 
 Um requisito do projeto de banco de dados era a criação de uma view. As views são consultas armazenadas que funcionam como uma tabela virtual. Os dados, de fato, não estão presentes na view, mas sim em suas tabelas de origem. A view, assim, é uma consulta e pode trazer dados de várias tabelas e utilizar todas as funções normalmente utilizadas em consultas, como group by, having, sum, count etc.
 
