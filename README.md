@@ -150,7 +150,7 @@ As triggers conseguem disponibilizar os dados do registro, tanto o dado antigo a
 
 Triggers podem ser usadas para validar campos, calcular informações, gravar registros de auditorias, entre outros vários usos. Nossa trigger foi utilizada para realizar o tratamento dos dados recebidos pela carga de senadores provenientes do arquivo CSV. Como visto na etapa de ETL, os dados obtidos da página de dados abertos foram inseridos em "carga_senador". A cada registro inserido, a trigger TRG_CARGA_SENADOR, vinculada a essa tabela, é ativada. A tabela "carga_senador" pode ser vista abaixo:
 
-![Tabela_Carga_Senador](images/carga-senador.png)
+![Tabela_Carga_Senador](images/carga-senador.PNG)
 
 A trigger segue a seguinte lógica: 
 
@@ -199,6 +199,19 @@ begin
  END 
 ```
 
+Após o tratamento dos dados realizados pela trigger, pode-se verificar o resultado nas tabelas "senador", "mandato" e "mandato_legislatura", conforme abaixo.
+
+- Tabela senador:
+
+![Tabela_Senador](images/senador.PNG)
+
+- Tabela mandato:
+
+![Tabela_Mandato](images/mandato.PNG)
+
+- Tabela mandato_legislatura:
+
+![Tabela_Mandato_Legislatura](images/mandato-legislatura.PNG)
 
 
 ### VIEW
