@@ -292,7 +292,9 @@ Nesse gráfico, fica fácil observar que, no período indicado, os tipos de desp
 
 #### CONSULTA 3 - Para um mesmo tipo de despesa e um mesmo fornedor, verificar se há divergências nos preços cobrados entre os senadores.
 
+Esta consulta foi criada para verificar se um mesmo fornecedor cobrou valores significativamente diferentes de senadores diferentes para um mesmo serviço. Foi identificado, assim, quem eram os fornecedores de cada despesa realizada pelos senadores. Um senador pode realizar o mesmo tipo de despesa várias vezes no ano e em vários anos. As despesas foram agrupadas, assim, pelos tipos de despesa já apresentados quando discutiu-se a view, pelo fornecedor e por senador. 
 
+Em cada registro, então calculou-se o valor total do tipo de despesa. Po exemplo, se um aluguel foi pago por um dois anos, o total gasto nesses vinte e quatro meses foi somado. Para fins de comparação, manteve-se o número de parcelas pagas no resultado, bem como o valor médio pago. A intenção era comparar despesas equivalentes, que foram pagas pelo mesmo tempo. A comparação seria prejudicada se, de um lado, tivesse o pagamento de um mês de aluguel de um senador e, no outro senador, o pagamento de dozes meses de aluguel.
 
 ```
 select u1.fornecedor as fornecedor, u1.despesa, 
