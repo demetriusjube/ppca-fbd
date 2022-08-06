@@ -623,7 +623,7 @@ A trigger segue a seguinte lógica:
 
 O código da trigger TRG_CARGA_SENADOR é disponibilizado abaixo:
 
-```
+```sql
 /* Comando para criar a trigger */
 CREATE DEFINER=`root`@`localhost` TRIGGER TRG_CARGA_SENADOR
 /* Trigger ativada após insert */
@@ -710,7 +710,7 @@ Uma view será não atualizável se não houver correspondência de um para um e
 
 A view escolhida tem por objetivo identificar quais são os maiores tipos de despesas por legislatura e por partido. Vale ressaltar que uma legislatura é um período de quatro anos. A partir desse objetivos, a seguinte consulta foi materializada:
 
-```
+```sql
 /* Comando para criar a VIEW */
 CREATE OR REPLACE VIEW fbd.VW_DESPESA_POR_LEGISLATURA AS
 /* Consulta a ser armazenada: tipos de despesas por legislatura e por partido. */
@@ -776,7 +776,7 @@ Um efeito colateral de se montar a consulta por meio de junção em vez de inter
 
 O código da consulta pode ser visto abaixo.
 
-```
+```sql
 /* Realiza o inner join para criar uma tabela com os dados de senadores de um lado e dados de senadores do outro, 
    desde que o fornecedor seja o mesmo, o tipo de despesa seja a mesma e os valores sejam diferentes em ordem de 10 */
 select u1.fornecedor as fornecedor, u1.despesa, 
