@@ -333,4 +333,21 @@ BEGIN
     END IF;
 END $$
 
+create view fbd.VW_DESPESA_POR_LEGISLATURA AS
+select tp.DESCRICAO as DESCRICAO_DESPESA, sum(d.VALOR_REEMBOLSADO) as VALOR_TOTAL, concat(l.ANO_INICIO, " - ", l.ANO_FIM) as LEGISLATURA  
+from fbd.TIPO_DESPESA tp, fbd.DESPESA d, fbd.SENADOR s, 
+     fbd.FORNECEDOR f, fbd.MANDATO m, fbd.LEGISLATURA l, 
+     fbd.MANDATO_LEGISLATURA ml  
+where tp.ID_TIPO_DESPESA = d.ID_TIPO_DESPESA and 
+      d.ID_SENADOR = s.ID_SENADOR and 
+      d.ID_FORNECEDOR = f.ID_FORNECEDOR and 
+      s.ID_SENADOR = m.ID_SENADOR and 
+      m.ID_MANDATO = ml.ID_MANDATO and 
+      m.LEGISLATURA = ml.NR_LEGISLATURA and 
+      ml.NR_LEGISLATURA = l.NR_LEGISLATURA and 
+      (d.ANO between l.ANO_INICIO and l.ANO_FIM)
+group by tp.ID_TIPO_DESPESA, l.NR_LEGISLATURA ;
+
+$$
+
 delimiter ;

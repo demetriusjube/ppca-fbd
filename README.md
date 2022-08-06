@@ -1,15 +1,38 @@
 # ppca-fbd
 Código da Disciplina Fundamentos de Bancos de Dados
 
+## Introdução
+
+As Cotas para Exercício da Atividade Parlamentos dos Senadores compreendem uma verba para reembolso de gastos dos Senadores em áreas específicas, para facilitar o exercício do mandato. Regulada pelo Ato da Primeira-Secretaria [APS 5/2014](https://adm.senado.leg.br/normas/ui/pub/normaConsultada?2&idNorma=203003), ela permite que os seguintes gastos sejam ressarcidos aos Senadores:
+
+- aluguel e manutenção de imóvel 
+- aquisição de material de consumo 
+- locação de meios de transporte
+- combustíveis e lubrificantes
+- contratação de consultorias, assessorias, pesquisas, trabalhos técnicos e outros serviços de apoio ao exercício do mandato parlamentar
+- serviços de segurança prestados por empresa especializada;
+- divulgação da atividade parlamentar
+- passagens aéreas, aquáticas e terrestres nacionais destinadas ao parlamentar ou a servidores comissionados e efetivos
+
+Seu montante varia de Senador para Senador, pois é calculado com uma Verba indenizatória fixa de R$ 15.000,00, somada ao valor de cinco passagens aéreas entre Brasília e a capital do Estado de origem do parlamentar, conforme Tabela IATA de tarifa governamental.e
+
+Para ter o ressarcimento, o parlamentar deve submeter o pedido de reembolso ao Senado, apresentando as notas fiscais dos serviços. Após análise de cada gasto, os valores pertinentes são depositados ao parlamentar, enquanto aqueles que não são permitidos pelo Ato são glosados.
+
+Uma vez que o volume de dinheiro envolvido com essa verba é grande, e as possibilidades de fornecedores envolvidos são indefinidas, assumimos que analisar os dados desses gastos seria um bom escopo para nosso trabalho.
+
 ## Arquitetura
 
 O código do trabalho é feito usando como SGBD MySQL. Para utilizá-lo, vamos usar uma imagem Docker que já roda o banco de dados.
 
 Após isso, faremos a importação dos dados das Cotas Parlamentares dos Senadores. Os dados abertos estão em https://www12.senado.leg.br/transparencia/dados-abertos-transparencia/dados-abertos-ceaps, item Cotas para Exercício da Atividade Parlamentar dos Senadores (CEAPS). Esses dados serão importados para uma tabela única, e normalizados em tabelas específicas depois.
 
-Utilizaremos como ferramenta de interação com o banco de dados o DBeaver 
+Utilizaremos como ferramenta de interação com o banco de dados o [DBeaver](https://dbeaver.io/download/), uma solução de software livre que permite fazer as consultas e importações de dados para nosso trabalho.
+
+Todo o código do trabalho está disponível no endereço [https://github.com/demetriusjube/ppca-fbd](https://github.com/demetriusjube/ppca-fbd), e pode ser baixado para replicação.
 
 ## Montagem do ambiente
+
+Os seguintes passos devem ser feitos para montagem do ambiente:
 
 - Instale o Docker com o Docker Compose(https://docs.docker.com/compose/install/)
 - Rode o seguinte comando no local onde está o arquivo docker-compose.yml para subir o banco de dados: `docker-compose up`. Ele vai criar um banco de dados com as seguintes características:
