@@ -483,25 +483,12 @@ Além de criar a estrutura de tabelas, o script também carrega a tabela  _Legis
 - Repita o procedimento para cada legislatura
 - Ao terminar de importar os dados das legislaturas anteriores, vá até o endereço da (legislatura atual)[https://www25.senado.leg.br/web/senadores/em-exercicio/-/e/por-sexo]
 - Faça o mesmo tratamento que foi feito para as legislaturas anteriores
-- Retire os caracteres `  *` (dois espaços em branco e um asterisco) da massa de dados. Esse sinal gráfico é pra representar os suplentes que entraram em exercício, e podem impedir que os senadores sejam identificados corretamente. 
+- Retire os caracteres `"  *"` (dois espaços em branco e um asterisco) da massa de dados. Esse sinal gráfico é pra representar os suplentes que entraram em exercício, e podem impedir que os senadores sejam identificados corretamente.
+- Salve o arquivo CSV 
 
 #### Importação dos dados para o SGBD
 
-Assim como foi feito para os dados de despesa, os dados de Senadores também devem ser importados utilizando o DBeaver. Repita os passos que foram feitos para a tabela `CARGA_DESPESA`, tendo o cuidado de mapear as colunas do CSV corretamente. 
-
-Há, porém, uma diferença. A tabela `CARGA_SENADOR` possui uma  _trigger_ que vai disparar a cada registro, populando as tabelas `SENADOR`, `MANDATO` e `MANDATO_LEGISLATURA`. A lógica desse gatilho vai se explicada mais à frente.
-
-
-### Dados brutos de despesa
-
-#### Tratamento dos arquivos
-
-- Baixar os dados do [site](https://www12.senado.leg.br/transparencia/dados-abertos-transparencia/dados-abertos-ceaps). Utilizaremos o período de 2009 a 2020, por estarem mais completos e íntegros
-- Abra os arquivos `csv` e retire a primeira linha. Ela tem o seguinte formato: `"ULTIMA ATUALIZACAO";"06/08/2021 02:00"`
-
-#### Importação dos dados para o SGBD
-
-- No Navegador de banco de dados, clique com o botão direito na tabela CARGA_DESPESA, e selecione Importar dados
+- No Navegador de banco de dados, clique com o botão direito na tabela CARGA_SENADOR, e selecione Importar dados
 
 ![DBeaver - Importar dados](images/importacao-inicio.png)
 
@@ -523,8 +510,7 @@ Note que as seguintes propriedades são específicas para o nosso caso:
   * Definir Strings vazias para NULL: `true`. Dessa forma as colunas ficarão nulas, e não com string vazias
   * Formato Date/Time: `dd/MM/yyyy`, para que as datas sejam importadas no formato correto
 
-
-- Mapeie as colunas do CSV com as colunas da tabela. Atenção para a coluna `DATA`, que deve ser mapeada para `DATA_REEMBOLSO`
+- Mapeie as colunas do CSV com as colunas da tabela. 
 
 ![DBeaver - Mapeamento das colunas](images/importacao-mapeamento-colunas.png)
 
@@ -532,22 +518,86 @@ Note que as seguintes propriedades são específicas para o nosso caso:
 
 ![DBeaver - Resumo da importação](images/importacao-resumo.png)
 
-- Conclua o procedimento, e os dados serão carregados na tabela CARGA_DESPESA
+- Conclua o procedimento, e os dados serão carregados na tabela CARGA_SENADOR
+
+A cada `INSERT`, os dados serão lançados nas tabelas normalizadas que tratam as informações do Senadores.
 
 
-### Processo de ETL das despesas
+### Dados brutos de despesa
 
-Uma vez que os dados brutos já estão cadastrados na base, faremos o processo de normalização dos dados de despesa dentro do nosso modelo. O objeto responsável por fazer essa transformação é a procedure `PRC_ETL_DESPESA`. 
+#### Tratamento dos arquivos
 
-## MANIPULAÇÃO DE DADOS
+- Baixar os dados do [site](https://www12.senado.leg.br/transparencia/dados-abertos-transparencia/dados-abertos-ceaps). Utilizaremos o período de 2009 a 2020, por estarem mais completos e íntegros
+- Abra os arquivos `csv` e retire a primeira linha. Ela tem o seguinte formato: `"ULTIMA ATUALIZACAO";"06/08/2021 02:00"`
 
-### PROCEDURE
+#### Importação dos dados para o SGBD
 
-- Despesas (Jubé)
-  - Carga a partir de CSV.  
-  - Realizar a transformação dos dados extraídos (separar mandato e legislatura no arquivo de depesas).
-  - Realizar a carga inicial das informações extraídas por meio do CSV.
-  - A cada chamada, ler toda a tabela e tratar os dados novos.
+Assim como foi feito para os dados dos Senadores, os dados de despesas também devem ser importados utilizando o DBeaver. Repita os passos que foram feitos para a tabela `CARGA_SENADOR`, tendo o cuidado de mapear as colunas do CSV corretamente. Atenção para a coluna `DATA`, que deve ser mapeada para `DATA_REEMBOLSO`.
+
+Cada inserção na tabela fará a chamada para a  _trigger_, que invocará a  _procedure_ `PRC_INCLUSAO_DESPESA` para quebrar essas informações.
+
+## Manipulação dos dados
+
+### PROCEDURE `PRC_INCLUSAO_DESPESA`
+
+Essa procedure é a responsável por gravar os dados das despesas em suas tabelas normalizadas, como foi visto anteriormente. O código contendo sua lógica pode ser visto abaixo:
+
+```sql
+CREATE DEFINER=`root`@`%` PROCEDURE fbd.PRC_INCLUSAO_DESPESA(
+    IN v_ano int,
+	IN v_mes int,
+    IN v_senador varchar(255) ,
+    IN v_tipoDespesa varchar(255) ,
+    IN v_cnpjCpf VARCHAR(20) ,
+	IN v_fornecedor varchar(255) ,
+	IN v_documento varchar(255) ,
+	IN v_dataReembolso DATE ,
+	IN v_detalhamento varchar(2000) ,
+	IN v_valorReembolsado decimal(15,2) ,
+	IN v_codDocumento varchar(100) 
+
+)
+BEGIN
+	DECLARE idSenador bigint DEFAULT 0;
+	DECLARE idFornecedor bigint DEFAULT NULL;
+	DECLARE idTipoDespesa bigint DEFAULT NULL;
+	DECLARE cpfCnpjLimpo varchar(20) DEFAULT '';
+   DECLARE total INT DEFAULT 0;
+
+   -- Verifica se o Senador já está na base, para recuperar o ID dele
+	SELECT ID_SENADOR INTO idSenador FROM SENADOR WHERE UPPER(NOME) = UPPER(v_senador) COLLATE utf8mb4_0900_as_ci;
+	-- Se conseguiu recuperar um Senador da base, procede com o cadastro
+	IF (idSenador IS NOT NULL AND idSenador > 0) THEN
+		-- Inicia uma transação para garantir a consistência dos dados
+		START TRANSACTION;
+	
+		-- Verifica se foi informado um fornecedor
+		IF (v_cnpjCpf IS NOT NULL AND TRIM(v_cnpjCpf) <> '') THEN
+		-- Verifica se o fornecedor já está na base. Se não estiver, insere
+			SET cpfCnpjLimpo = TRIM(REPLACE(REPLACE(REPLACE(v_cnpjCPf, '.', ''),'-',''),'/',''));
+			SELECT ID_FORNECEDOR INTO idFornecedor FROM FORNECEDOR WHERE TRIM(CPF_CNPJ) = cpfCnpjLimpo COLLATE utf8mb4_0900_as_ci;
+			IF (idFornecedor IS NULL) THEN
+				INSERT INTO FORNECEDOR (NOME, CPF_CNPJ) VALUES (v_fornecedor, cpfCnpjLimpo);
+				SET idFornecedor = LAST_INSERT_ID();
+			END IF;
+		END IF;
+	
+		-- Verifica se o tipo de despesa já está na base
+		SELECT ID_TIPO_DESPESA INTO idTipoDespesa FROM TIPO_DESPESA WHERE TRIM(UPPER(DESCRICAO)) = TRIM(UPPER(v_tipoDespesa)) COLLATE utf8mb4_0900_as_ci;
+		IF (idTipoDespesa IS NULL) THEN
+			INSERT INTO TIPO_DESPESA (DESCRICAO) VALUES (v_tipoDespesa);
+			SET idTipoDespesa = LAST_INSERT_ID(); 
+		END IF;
+		
+		-- Insere os dados na tabela DESPESA
+		INSERT INTO DESPESA (ANO, MES, ID_SENADOR, ID_FORNECEDOR, ID_TIPO_DESPESA, DATA_REEMBOLSO, DETALHAMENTO , DOCUMENTO, COD_DOCUMENTO, VALOR_REEMBOLSADO)
+		VALUES (v_ano, v_mes, idSenador, idFornecedor, idTipoDespesa, v_dataReembolso, v_detalhamento ,v_documento, v_codDocumento, v_valorReembolsado);
+		
+		
+		COMMIT;
+    END IF;
+END
+```
 
 ### TRIGGER TRG_CARGA_SENADOR
 
