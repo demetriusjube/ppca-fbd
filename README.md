@@ -574,25 +574,30 @@ A trigger segue a seguinte lógica:
 O código da trigger TRG_CARGA_SENADOR é disponibilizado abaixo:
 
 ```
+/* Comando para criar a trigger */
 CREATE DEFINER=`root`@`localhost` TRIGGER TRG_CARGA_SENADOR
+/* Trigger ativada após insert */
 AFTER INSERT
 ON carga_senador FOR EACH row
 begin
+    /* Variáveis para manter informações temporárias. */
     DECLARE v_id_senador int default 0;
     DECLARE v_id_mandato int default 0;
    
+    /* Consulta para verificar se o senador já existe na base. */
     SELECT s.id_senador INTO v_id_senador 
         FROM fbd.senador s 
         WHERE TRIM(UPPER(s.nome)) = TRIM(UPPER(new.NOME)) COLLATE utf8mb4_0900_ai_ci;    
-	
+    
     IF (v_id_senador = 0) then
+        /* Insere valor do senador na base e armazena ID */ 
 	INSERT INTO SENADOR (NOME, SEXO) 
 	    VALUES (new.NOME, new.SEXO);
 	SELECT s.id_senador INTO v_id_senador 
 	    FROM fbd.senador s 
 	    WHERE TRIM(UPPER(s.nome)) = TRIM(UPPER(new.NOME)) COLLATE utf8mb4_0900_ai_ci;
     end if; 
-   
+   /* Consulta para verificar se mandato já existe. Insere na base e armazena seu ID. */
     SELECT m.id_mandato INTO v_id_mandato 
         FROM fbd.mandato m 
 	WHERE m.ID_SENADOR = v_id_senador AND m.LEGISLATURA = new.legislatura;
@@ -656,17 +661,21 @@ Uma view será não atualizável se não houver correspondência de um para um e
 A view escolhida tem por objetivo identificar quais são os maiores tipos de despesas por legislatura e por partido. Vale ressaltar que uma legislatura é um período de quatro anos. A partir desse objetivos, a seguinte consulta foi materializada:
 
 ```
+/* Comando para criar a VIEW */
 CREATE OR REPLACE VIEW fbd.VW_DESPESA_POR_LEGISLATURA AS
+/* Consulta a ser armazenada: tipos de despesas por legislatura e por partido. */
 SELECT td.id_tipo_despesa, TD.DESCRICAO AS DESCRICAO_DESPESA, 
        CONCAT(L.ANO_INICIO, " - ", L.ANO_FIM) AS LEGISLATURA, 
        SUM(D.VALOR_REEMBOLSADO) AS VALOR_TOTAL, m.PARTIDO 
 FROM fbd.TIPO_DESPESA TD, fbd.DESPESA D, fbd.MANDATO M, 
      fbd.LEGISLATURA L, fbd.MANDATO_LEGISLATURA ML   
+/* seleção da consulta para trazer consistência das informações */     
 WHERE TD.ID_TIPO_DESPESA = D.ID_TIPO_DESPESA AND 
       D.ID_SENADOR = M.ID_SENADOR  AND
       M.ID_MANDATO = ML.ID_MANDATO AND 
       M.LEGISLATURA = ML.NR_LEGISLATURA AND 
       ML.NR_LEGISLATURA = L.NR_LEGISLATURA # AND 
+/* agrupamento das informações para crias o resultado esperado. */
 GROUP BY TD.ID_TIPO_DESPESA, ML.NR_LEGISLATURA, m.PARTIDO 
 ORDER BY legislatura DESC, td.descricao, m.partido asc;
 ```
@@ -718,6 +727,8 @@ Um efeito colateral de se montar a consulta por meio de junção em vez de inter
 O código da consulta pode ser visto abaixo.
 
 ```
+/* Realiza o inner join para criar uma tabela com os dados de senadores de um lado e dados de senadores do outro, 
+   desde que o fornecedor seja o mesmo, o tipo de despesa seja a mesma e os valores sejam diferentes em ordem de 10 */
 select u1.fornecedor as fornecedor, u1.despesa, 
        s1.nome as senador1, u1.valor_medio as valor_medio_senador1, 
        u1.valor_total as valor_total_senador1, u1.nr_parcelas as nr_parcelas_senador1,
@@ -726,6 +737,7 @@ select u1.fornecedor as fornecedor, u1.despesa,
        concat(s1.nome, " - ", s2.nome) as relacao_senadores, 
        concat(s2.nome, " - ", s1.nome) as relacao_senadores_inversa
 from (
+    /* seleciona primeiro grupo com informações de fornecedor, tipo de despesa e valor */
     select f.id_fornecedor, f.NOME as fornecedor, td.ID_TIPO_DESPESA, 
 	   td.DESCRICAO as despesa, s.ID_SENADOR , s.NOME as senador,
            round((sum(d.VALOR_REEMBOLSADO) / count(d.MES)),2) as valor_medio, 
@@ -735,6 +747,7 @@ from (
 	      d.ID_SENADOR = s.ID_SENADOR 
         group by td.ID_TIPO_DESPESA, f.ID_FORNECEDOR, s.ID_SENADOR) u1, 
      (
+    /* seleciona segundo grupo com informações de fornecedor, tipo de despesa e valor */
     select f.id_fornecedor, f.NOME as fornecedor, td.ID_TIPO_DESPESA, 
 	   td.DESCRICAO as despesa, s.ID_SENADOR , s.NOME as senador, 
 	   round((sum(d.VALOR_REEMBOLSADO) / count(d.MES)),2) as valor_medio, 
@@ -744,6 +757,10 @@ from (
 	      d.ID_SENADOR = s.ID_SENADOR
         group by td.ID_TIPO_DESPESA, f.ID_FORNECEDOR, s.ID_SENADOR) u2, 
     fbd.senador s1, fbd.senador s2
+/* Codições do SQL externo para fazer a junção entre as consultas de senadores. 
+   Optou-se por comparar os senadores em uma linha para facilitar o entendimento e o encontro das 
+   discrepâncias de valores pagos a um mesmo fornecedor em um mesmo tipo de despesa. 
+   Com isso, a seleção externa compara os valores de de id_senador diferente em cada tabela. */    
 where u1.id_fornecedor = u2.id_fornecedor and u1.id_tipo_despesa = u2.id_tipo_despesa and 
       u1.id_senador != u2.id_senador and u1.id_senador = s1.ID_SENADOR and 
       u2.id_senador = s2.id_senador and u1.nr_parcelas = u2.nr_parcelas and
