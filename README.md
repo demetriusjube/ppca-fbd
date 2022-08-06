@@ -20,13 +20,401 @@ Para ter o ressarcimento, o parlamentar deve submeter o pedido de reembolso ao S
 
 Uma vez que o volume de dinheiro envolvido com essa verba é grande, e as possibilidades de fornecedores envolvidos são indefinidas, assumimos que analisar os dados desses gastos seria um bom escopo para nosso trabalho.
 
-## Arquitetura
+## Modelagem
 
-O código do trabalho é feito usando como SGBD MySQL. Para utilizá-lo, vamos usar uma imagem Docker que já roda o banco de dados.
+Para realizar a análise dos dados da CEAPS, foi feita a seguinte modelagem:
 
-Após isso, faremos a importação dos dados das Cotas Parlamentares dos Senadores. Os dados abertos estão em https://www12.senado.leg.br/transparencia/dados-abertos-transparencia/dados-abertos-ceaps, item Cotas para Exercício da Atividade Parlamentar dos Senadores (CEAPS). Esses dados serão importados para uma tabela única, e normalizados em tabelas específicas depois.
+![Modelo de dados](images/modelo-dados.png)
 
-Utilizaremos como ferramenta de interação com o banco de dados o [DBeaver](https://dbeaver.io/download/), uma solução de software livre que permite fazer as consultas e importações de dados para nosso trabalho.
+Ela consiste em duas tabelas de carga (`CARGA_SENADOR` e `CARGA_DESPESA`), que serão responsáveis por receber as informações brutas que serão montadas com base nos dados do Portal da Transparência do Senado Federal. 
+
+Cada uma dessas tabelas terá uma  _trigger_ , que será responsável por quebrar as informações e normalizá-las no modelo proposto. A lógica da  _trigger_ de Senadores está mostrada abaixo: 
+
+![Fluxo da trigger de carga de Senadores](images/fluxo-importacao-senadores.png)
+
+Já a carga de despesas, por ser mais complexa, delega para uma procedure a responsabilidade de colocar as informações nas tabelas, conforme mostra o fluxo:
+
+![Fluxo da trigger de carga de Despesas](images/fluxo-importacao-despesas.png)
+
+Ao final dessa lógica, teremos as informações segmentadas nas seguintes tabelas:
+
+- `SENADOR`: Apresentará os dados de um Senador, que será referenciado pelas outras tabelas
+- `MANDATO`: Um Senador pode ter vários mandatos. Essa informação deve ser normalizada para poder diferenciar em qual mandato o gasto foi realizado
+- `LEGISLATURA`: É o período de 4 anos de exercício de um parlamentar. O mandato de um Senador compreende duas legislaturas
+- `MANDATO_LEGISLATURA`: Relaciona as informações de mandato e legislatura
+- `FORNECEDOR`: Representa o fornecedor de algum serviço que o Senador utilizou. São identificados pelo CPF ou CNPJ
+- `TIPO_DESPESA`: Os tipos de despesa que foram ressarcidos
+- `DESPESA`: As informações do reembolso que foi realizado 
+
+O script de criação desse modelo pode ser visto abaixo:
+
+```sql
+-- Carga despesa
+CREATE TABLE fbd.CARGA_DESPESA(
+	ANO INT(4) NOT NULL,
+	MES INT(2) NOT NULL,
+	SENADOR varchar(255) NOT NULL,
+	TIPO_DESPESA varchar(255) NULL,
+	CNPJ_CPF varchar(20) NULL,
+	FORNECEDOR varchar(255) NULL,
+	DOCUMENTO varchar(255) NULL,
+	DATA_REEMBOLSO DATE NULL,
+	DETALHAMENTO varchar(2000) NULL,
+	VALOR_REEMBOLSADO decimal(15,2) NULL,
+	COD_DOCUMENTO varchar(100) NULL
+)
+ENGINE=InnoDB
+DEFAULT CHARSET=utf8mb4
+COLLATE=utf8mb4_0900_ai_ci;
+
+-- Carga Senador
+CREATE TABLE fbd.CARGA_SENADOR (
+	NOME varchar(255) NULL,
+	PARTIDO varchar(100) NULL,
+	UF varchar(2) NULL,
+	PERIODO varchar(100) NULL,
+	SEXO varchar(1) NULL,
+	LEGISLATURA smallint NULL
+)
+ENGINE=InnoDB
+DEFAULT CHARSET=utf8mb4
+COLLATE=utf8mb4_0900_ai_ci;
+
+-- Tipo Despesa
+CREATE TABLE fbd.TIPO_DESPESA (
+	ID_TIPO_DESPESA BIGINT auto_increment NOT NULL,
+	DESCRICAO varchar(255) NOT NULL,
+	CONSTRAINT TIPO_DESPESA_PK PRIMARY KEY (ID_TIPO_DESPESA),
+	CONSTRAINT TIPO_DESPESA_UN UNIQUE KEY (DESCRICAO)
+)
+ENGINE=InnoDB
+DEFAULT CHARSET=utf8mb4
+COLLATE=utf8mb4_0900_ai_ci
+AUTO_INCREMENT=1;
+
+-- Legislatura
+CREATE TABLE fbd.LEGISLATURA (
+  NR_LEGISLATURA smallint NOT NULL,
+  ANO_INICIO smallint NOT NULL,
+  ANO_FIM smallint NOT NULL,
+  CONSTRAINT LEGISLATURA_PK PRIMARY KEY (NR_LEGISLATURA)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- Fornecedor
+CREATE TABLE fbd.FORNECEDOR (
+	ID_FORNECEDOR BIGINT auto_increment NOT NULL,
+	NOME varchar(255) NOT NULL,
+	CPF_CNPJ varchar(20) NULL,
+	CONSTRAINT FORNECEDOR_PK PRIMARY KEY (ID_FORNECEDOR),
+	CONSTRAINT FORNECEDOR_UN UNIQUE KEY (CPF_CNPJ)
+)
+ENGINE=InnoDB
+DEFAULT CHARSET=utf8mb4
+COLLATE=utf8mb4_0900_ai_ci
+AUTO_INCREMENT=1;
+
+-- Senador
+
+CREATE TABLE fbd.SENADOR (
+  ID_SENADOR bigint NOT NULL AUTO_INCREMENT,
+  NOME varchar(255) NOT NULL,
+  SEXO varchar(1) DEFAULT NULL,
+  CONSTRAINT SENADOR_PK PRIMARY KEY (ID_SENADOR),
+  CONSTRAINT SENADOR_NOME_UN UNIQUE KEY (NOME)
+) 
+ENGINE=InnoDB 
+DEFAULT CHARSET=utf8mb4 
+COLLATE=utf8mb4_0900_ai_ci 
+AUTO_INCREMENT=1;
+
+-- Mandato
+
+CREATE TABLE fbd.MANDATO (
+	ID_MANDATO BIGINT auto_increment NOT NULL,
+	ID_SENADOR BIGINT NOT NULL,
+	ESTADO varchar(2) NULL,
+	PERIODO varchar(100) NULL,
+	LEGISLATURA SMALLINT NULL,
+	PARTIDO varchar(100) NULL,
+	CONSTRAINT MANDATO_PK PRIMARY KEY (ID_MANDATO),
+	CONSTRAINT MANDATO_FK FOREIGN KEY (ID_SENADOR) REFERENCES fbd.SENADOR(ID_SENADOR)
+)
+ENGINE=InnoDB
+DEFAULT CHARSET=utf8mb4
+COLLATE=utf8mb4_0900_ai_ci
+AUTO_INCREMENT=1;
+
+-- Mandato Legislatura
+
+CREATE TABLE fbd.MANDATO_LEGISLATURA (
+	ID_MANDATO BIGINT NOT NULL,
+	NR_LEGISLATURA SMALLINT NOT NULL,
+	CONSTRAINT MANDATO_LEGISLATURA_PK PRIMARY KEY (ID_MANDATO,NR_LEGISLATURA),
+	CONSTRAINT MANDATO_LEGISLATURA_MANDATO_FK FOREIGN KEY (ID_MANDATO) REFERENCES fbd.MANDATO(ID_MANDATO),
+	CONSTRAINT MANDATO_LEGISLATURA_LEGISLATURA_FK FOREIGN KEY (NR_LEGISLATURA) REFERENCES fbd.LEGISLATURA(NR_LEGISLATURA)
+)
+ENGINE=InnoDB
+DEFAULT CHARSET=utf8mb4
+COLLATE=utf8mb4_0900_ai_ci;
+
+-- Despesa
+
+CREATE TABLE fbd.DESPESA (
+	ID_DESPESA BIGINT auto_increment NOT NULL,
+	ANO SMALLINT NOT NULL,
+	MES TINYINT NOT NULL,
+	ID_SENADOR BIGINT NOT NULL,
+	ID_FORNECEDOR BIGINT NULL,
+	ID_TIPO_DESPESA BIGINT NOT NULL,
+	DATA_REEMBOLSO DATE NULL,
+	DETALHAMENTO varchar(2000) NULL,
+	DOCUMENTO varchar(100) NULL,
+	COD_DOCUMENTO varchar(100) NOT NULL,
+	VALOR_REEMBOLSADO decimal(15,2) NOT NULL,
+	CONSTRAINT DESPESA_PK PRIMARY KEY (ID_DESPESA),
+	CONSTRAINT DESPESA_SENADOR_FK FOREIGN KEY (ID_SENADOR) REFERENCES fbd.SENADOR(ID_SENADOR),
+	CONSTRAINT DESPESA_FORNECEDOR_FK FOREIGN KEY (ID_FORNECEDOR) REFERENCES fbd.FORNECEDOR(ID_FORNECEDOR),
+	CONSTRAINT DESPESA_TIPO_DESPESA_FK FOREIGN KEY (ID_TIPO_DESPESA) REFERENCES fbd.TIPO_DESPESA(ID_TIPO_DESPESA),
+	CONSTRAINT DESPESA_CODIGO_UN UNIQUE KEY (COD_DOCUMENTO)
+)
+ENGINE=InnoDB
+DEFAULT CHARSET=utf8mb4
+COLLATE=utf8mb4_0900_ai_ci
+AUTO_INCREMENT=1;
+
+-- Carga da tabela Legislatura
+
+INSERT INTO fbd.LEGISLATURA (NR_LEGISLATURA,ANO_INICIO,ANO_FIM) VALUES (53,2007,2011);
+INSERT INTO fbd.LEGISLATURA (NR_LEGISLATURA,ANO_INICIO,ANO_FIM) VALUES (54,2011,2015);
+INSERT INTO fbd.LEGISLATURA (NR_LEGISLATURA,ANO_INICIO,ANO_FIM) VALUES (55,2015,2019);
+INSERT INTO fbd.LEGISLATURA (NR_LEGISLATURA,ANO_INICIO,ANO_FIM) VALUES (56,2019,2023);
+
+-- Trigger de carga de senadores
+
+delimiter $$
+CREATE DEFINER=`root`@`%` TRIGGER TRG_CARGA_SENADOR
+AFTER INSERT
+ON CARGA_SENADOR FOR EACH row
+begin
+    DECLARE v_id_senador int default 0;
+    DECLARE v_id_mandato int default 0;
+   
+	SELECT s.id_senador INTO v_id_senador FROM fbd.SENADOR s WHERE TRIM(UPPER(s.nome)) = TRIM(UPPER(new.NOME)) COLLATE utf8mb4_0900_ai_ci;    
+	
+	IF (v_id_senador = 0) then
+	    INSERT INTO fbd.SENADOR (NOME, SEXO) VALUES (UPPER(new.NOME), new.SEXO);
+	    SELECT s.id_senador INTO v_id_senador FROM fbd.SENADOR s WHERE TRIM(UPPER(s.nome)) = TRIM(UPPER(new.NOME)) COLLATE utf8mb4_0900_ai_ci;
+	end if; 
+   
+	SELECT m.id_mandato INTO v_id_mandato FROM fbd.MANDATO m WHERE m.ID_SENADOR = v_id_senador AND m.LEGISLATURA = new.legislatura;
+ 	
+   IF (v_id_mandato = 0) then
+    	INSERT INTO MANDATO (ID_SENADOR, ESTADO, PERIODO, LEGISLATURA, PARTIDO) VALUES (V_ID_SENADOR, new.uf, new.PERIODO, new.LEGISLATURA, new.PARTIDO);
+    	SELECT m.id_mandato INTO v_id_mandato FROM fbd.MANDATO m WHERE m.ID_SENADOR = v_id_senador AND m.LEGISLATURA = new.legislatura;
+        INSERT INTO MANDATO_LEGISLATURA (ID_MANDATO, NR_LEGISLATURA) VALUES (v_id_mandato, new.LEGISLATURA);
+    end if;
+
+ END 
+$$
+ 
+ -- Procedure de carga de despesa
+CREATE DEFINER=`root`@`%` PROCEDURE `fbd`.`PRC_ETL_DESPESA`()
+BEGIN
+
+	DECLARE v_ano int DEFAULT 0;
+    DECLARE v_mes int DEFAULT 0;
+    DECLARE v_senador varchar(255) DEFAULT '';
+    DECLARE v_tipoDespesa varchar(255) DEFAULT '';
+    DECLARE v_cnpjCpf VARCHAR(20) DEFAULT '';
+	DECLARE v_fornecedor varchar(255) DEFAULT '';
+	DECLARE v_documento varchar(255) DEFAULT '';
+	DECLARE v_dataReembolso DATE ;
+	DECLARE v_detalhamento varchar(2000) DEFAULT '';
+	DECLARE v_valorReembolsado decimal(15,2) ;
+	DECLARE v_codDocumento varchar(100) ;
+	DECLARE idSenador bigint DEFAULT 0;
+	DECLARE idFornecedor bigint DEFAULT NULL;
+	DECLARE idTipoDespesa bigint DEFAULT NULL;
+	DECLARE cpfCnpjLimpo varchar(20) DEFAULT '';
+    DECLARE total INT DEFAULT 0;
+    DECLARE done BOOLEAN DEFAULT false;
+    DECLARE curs CURSOR FOR 
+    	SELECT ANO, MES, SENADOR, TIPO_DESPESA, CNPJ_CPF, FORNECEDOR, DOCUMENTO, DATA_REEMBOLSO, DETALHAMENTO, VALOR_REEMBOLSADO, COD_DOCUMENTO 
+    	FROM CARGA_DESPESA 
+    	WHERE COD_DOCUMENTO NOT IN (
+    		SELECT COD_DOCUMENTO COLLATE utf8mb4_0900_as_ci AS COD FROM DESPESA
+    	) AND SENADOR IN (
+    		SELECT DISTINCT s.NOME COLLATE utf8mb4_0900_as_ci AS NOME_SENADOR FROM SENADOR s);
+    DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
+   	
+    SELECT CONCAT('TOTAL DE REGISTROS: ',FOUND_ROWS()); 
+	SELECT 'Iniciando cadastro...';
+    OPEN curs;
+   
+	read_loop: LOOP
+    -- WHILE (done != true)DO
+    	SET done = false;
+        FETCH curs INTO v_ano, v_mes, v_senador, v_tipoDespesa, v_cnpjCpf, v_fornecedor, v_documento, v_dataReembolso, v_detalhamento, v_valorReembolsado, v_codDocumento;
+        IF done THEN
+        	LEAVE read_loop;
+        END IF;
+       -- Verifica se o Senador já está na base, para recuperar o ID dele
+       	-- SELECT CONCAT('Pesquisando o Senador ', v_senador); 
+		SELECT ID_SENADOR INTO idSenador FROM SENADOR WHERE UPPER(NOME) = UPPER(v_senador) COLLATE utf8mb4_0900_as_ci;
+		-- SELECT concat('Recuperou o senador com id ', idSenador);
+		IF (idSenador IS NOT NULL AND idSenador > 0) THEN
+			START TRANSACTION;
+		
+			-- Verifica se foi informado um fornecedor
+			IF (v_cnpjCpf IS NOT NULL AND TRIM(v_cnpjCpf) <> '') THEN
+			-- Verifica se o fornecedor já está na base. Se não estiver, insere
+				SET cpfCnpjLimpo = TRIM(REPLACE(REPLACE(REPLACE(v_cnpjCPf, '.', ''),'-',''),'/',''));
+				-- SELECT CONCAT('Verificando fornecedor com cpfCnpj ', cpfCnpjLimpo);
+				SELECT ID_FORNECEDOR INTO idFornecedor FROM FORNECEDOR WHERE TRIM(CPF_CNPJ) = cpfCnpjLimpo COLLATE utf8mb4_0900_as_ci;
+				-- SELECT CONCAT('Fornecedor: ', idFornecedor);
+				IF (idFornecedor IS NULL) THEN
+					INSERT INTO FORNECEDOR (NOME, CPF_CNPJ) VALUES (v_fornecedor, cpfCnpjLimpo);
+					SET idFornecedor = LAST_INSERT_ID();
+					-- SELECT CONCAT('Fornecedor ', v_fornecedor, ' inserido com id ', idFornecedor);
+				END IF;
+			END IF;
+		
+			-- Verifica se o tipo de despesa já está na base
+			-- SELECT CONCAT('Verificando tipo de despesa', v_tipoDespesa);
+			SELECT ID_TIPO_DESPESA INTO idTipoDespesa FROM TIPO_DESPESA WHERE TRIM(UPPER(DESCRICAO)) = TRIM(UPPER(v_tipoDespesa)) COLLATE utf8mb4_0900_as_ci;
+			-- SELECT CONCAT('Tipo de despesa: ', idFornecedor);
+			IF (idTipoDespesa IS NULL) THEN
+				INSERT INTO TIPO_DESPESA (DESCRICAO) VALUES (v_tipoDespesa);
+				SET idTipoDespesa = LAST_INSERT_ID(); 
+				-- SELECT CONCAT('Tipo de despesa ', v_tipoDespesa, ' inserido com id ', idTipoDespesa);
+			END IF;
+			
+			-- SELECT CONCAT ('Ano: ', v_ano);
+			-- Insere os dados na tabela DESPESA
+			INSERT INTO DESPESA (ANO, MES, ID_SENADOR, ID_FORNECEDOR, ID_TIPO_DESPESA, DATA_REEMBOLSO, DETALHAMENTO , DOCUMENTO, COD_DOCUMENTO, VALOR_REEMBOLSADO)
+			VALUES (v_ano, v_mes, idSenador, idFornecedor, idTipoDespesa, v_dataReembolso, v_detalhamento ,v_documento, v_codDocumento, v_valorReembolsado);
+			-- Limpa as variáveis para garantir que a verificação será feita corretamente
+			SET idFornecedor = NULL;
+			SET idTipoDespesa = NULL;
+			SET total = total +1;
+			
+			
+			COMMIT;
+        END IF;
+       	-- Limpa o senador para garantir outro loop
+       	SET idSenador = NULL;
+
+	END LOOP;
+    CLOSE curs;
+    SELECT CONCAT('Importação terminada! ', total, ' registros importados!'); 
+   
+
+END  $$
+
+CREATE DEFINER=`root`@`%` TRIGGER `TRG_CARGA_DESPESA` AFTER INSERT ON `CARGA_DESPESA` FOR EACH ROW begin
+    DECLARE v_id_despesa int default 0;
+   
+	SELECT d.ID_DESPESA INTO v_id_despesa FROM fbd.DESPESA d WHERE d.COD_DOCUMENTO = new.COD_DOCUMENTO;    
+	
+	IF (v_id_despesa = 0) then
+		CALL fbd.PRC_INCLUSAO_DESPESA (new.ANO, new.MES, new.SENADOR, new.TIPO_DESPESA, new.CNPJ_CPF, new.FORNECEDOR, new.DOCUMENTO, new.DATA_REEMBOLSO, new.DETALHAMENTO, new.VALOR_REEMBOLSADO, new.COD_DOCUMENTO);
+	end if; 
+   
+ END $$
+ 
+CREATE DEFINER=`root`@`%` PROCEDURE fbd.PRC_INCLUSAO_DESPESA(
+    IN v_ano int,
+	IN v_mes int,
+    IN v_senador varchar(255) ,
+    IN v_tipoDespesa varchar(255) ,
+    IN v_cnpjCpf VARCHAR(20) ,
+	IN v_fornecedor varchar(255) ,
+	IN v_documento varchar(255) ,
+	IN v_dataReembolso DATE ,
+	IN v_detalhamento varchar(2000) ,
+	IN v_valorReembolsado decimal(15,2) ,
+	IN v_codDocumento varchar(100) 
+
+)
+BEGIN
+	DECLARE idSenador bigint DEFAULT 0;
+	DECLARE idFornecedor bigint DEFAULT NULL;
+	DECLARE idTipoDespesa bigint DEFAULT NULL;
+	DECLARE cpfCnpjLimpo varchar(20) DEFAULT '';
+    DECLARE total INT DEFAULT 0;
+
+   -- Verifica se o Senador já está na base, para recuperar o ID dele
+   	-- SELECT CONCAT('Pesquisando o Senador ', v_senador); 
+	SELECT ID_SENADOR INTO idSenador FROM SENADOR WHERE UPPER(NOME) = UPPER(v_senador) COLLATE utf8mb4_0900_as_ci;
+	-- SELECT concat('Recuperou o senador com id ', idSenador);
+	IF (idSenador IS NOT NULL AND idSenador > 0) THEN
+		START TRANSACTION;
+	
+		-- Verifica se foi informado um fornecedor
+		IF (v_cnpjCpf IS NOT NULL AND TRIM(v_cnpjCpf) <> '') THEN
+		-- Verifica se o fornecedor já está na base. Se não estiver, insere
+			SET cpfCnpjLimpo = TRIM(REPLACE(REPLACE(REPLACE(v_cnpjCPf, '.', ''),'-',''),'/',''));
+			-- SELECT CONCAT('Verificando fornecedor com cpfCnpj ', cpfCnpjLimpo);
+			SELECT ID_FORNECEDOR INTO idFornecedor FROM FORNECEDOR WHERE TRIM(CPF_CNPJ) = cpfCnpjLimpo COLLATE utf8mb4_0900_as_ci;
+			-- SELECT CONCAT('Fornecedor: ', idFornecedor);
+			IF (idFornecedor IS NULL) THEN
+				INSERT INTO FORNECEDOR (NOME, CPF_CNPJ) VALUES (v_fornecedor, cpfCnpjLimpo);
+				SET idFornecedor = LAST_INSERT_ID();
+				-- SELECT CONCAT('Fornecedor ', v_fornecedor, ' inserido com id ', idFornecedor);
+			END IF;
+		END IF;
+	
+		-- Verifica se o tipo de despesa já está na base
+		-- SELECT CONCAT('Verificando tipo de despesa', v_tipoDespesa);
+		SELECT ID_TIPO_DESPESA INTO idTipoDespesa FROM TIPO_DESPESA WHERE TRIM(UPPER(DESCRICAO)) = TRIM(UPPER(v_tipoDespesa)) COLLATE utf8mb4_0900_as_ci;
+		-- SELECT CONCAT('Tipo de despesa: ', idFornecedor);
+		IF (idTipoDespesa IS NULL) THEN
+			INSERT INTO TIPO_DESPESA (DESCRICAO) VALUES (v_tipoDespesa);
+			SET idTipoDespesa = LAST_INSERT_ID(); 
+			-- SELECT CONCAT('Tipo de despesa ', v_tipoDespesa, ' inserido com id ', idTipoDespesa);
+		END IF;
+		
+		-- SELECT CONCAT ('Ano: ', v_ano);
+		-- Insere os dados na tabela DESPESA
+		INSERT INTO DESPESA (ANO, MES, ID_SENADOR, ID_FORNECEDOR, ID_TIPO_DESPESA, DATA_REEMBOLSO, DETALHAMENTO , DOCUMENTO, COD_DOCUMENTO, VALOR_REEMBOLSADO)
+		VALUES (v_ano, v_mes, idSenador, idFornecedor, idTipoDespesa, v_dataReembolso, v_detalhamento ,v_documento, v_codDocumento, v_valorReembolsado);
+		
+		
+		COMMIT;
+    END IF;
+END $$
+
+create view fbd.VW_DESPESA_POR_LEGISLATURA AS
+select tp.DESCRICAO as DESCRICAO_DESPESA, sum(d.VALOR_REEMBOLSADO) as VALOR_TOTAL, concat(l.ANO_INICIO, " - ", l.ANO_FIM) as LEGISLATURA  
+from fbd.TIPO_DESPESA tp, fbd.DESPESA d, fbd.SENADOR s, 
+     fbd.FORNECEDOR f, fbd.MANDATO m, fbd.LEGISLATURA l, 
+     fbd.MANDATO_LEGISLATURA ml  
+where tp.ID_TIPO_DESPESA = d.ID_TIPO_DESPESA and 
+      d.ID_SENADOR = s.ID_SENADOR and 
+      d.ID_FORNECEDOR = f.ID_FORNECEDOR and 
+      s.ID_SENADOR = m.ID_SENADOR and 
+      m.ID_MANDATO = ml.ID_MANDATO and 
+      m.LEGISLATURA = ml.NR_LEGISLATURA and 
+      ml.NR_LEGISLATURA = l.NR_LEGISLATURA and 
+      (d.ANO between l.ANO_INICIO and l.ANO_FIM)
+group by tp.ID_TIPO_DESPESA, l.NR_LEGISLATURA ;
+
+$$
+
+delimiter ;
+
+```
+
+## Arquitetura da solução
+
+O SGBD escolhido para realizar a importação dos dados foi o MySQL. A maneira mais simples de subir essa infraestrutura foi a utilização de uma imagem Docker, que cria um container com a configuração do MySQL pronta para ser usada. Porém, a instalação direta do MySQL também deve funcionar.
+
+
+Após isso, foi feita a montagem dos dados dos Senadores e das Cotas Parlamentares. Os dados abertos das Cotas estão em [https://www12.senado.leg.br/transparencia/dados-abertos-transparencia/dados-abertos-ceaps](https://www12.senado.leg.br/transparencia/dados-abertos-transparencia/dados-abertos-ceaps) , item Cotas para Exercício da Atividade Parlamentar dos Senadores (CEAPS). 
+
+Para os dados dos Senadores, houve uma diferença: o portal do Senado não possui um arquivo pronto com os dados dos parlamentares das legislaturas anteriores. Sendo assim, foi necessário recuperar esses dados através das informações que estão nas páginas HTML e formatá-los como CSVs para importação no banco.
+
+Foi utilizada como ferramenta de interação com o banco de dados o [DBeaver](https://dbeaver.io/download/), uma solução de software livre que permite fazer as consultas e importações de dados para nosso trabalho.
 
 Todo o código do trabalho está disponível no endereço [https://github.com/demetriusjube/ppca-fbd](https://github.com/demetriusjube/ppca-fbd), e pode ser baixado para replicação.
 
@@ -61,15 +449,13 @@ Pra acessar com mais facilidade o banco de dados e permitir uma importação com
 
 5. Salve a conexão. 
 
-## Importação dos dados
+## Processo de ETL
 
 Para dar a carga dos dados recuperados do site da Transparência no nosso banco de dados, precisaremos fazer a preparação dos dados dos arquivos e a importação no SGBD. Veremos todos os passos a seguir.
 
 ### Criação das tabelas do banco de dados
 
-Vamos criar os objetos de banco necessários para que possamos receber os dados e tratá-los para obter as informações que queremos. O script de criação dos dados está em `fbd_scripts/fbd-tables.sql`, e vai gerar o banco de dados da figura abaixo:
-
-![Modelo de dados](images/modelo-dados.png)
+Vamos criar os objetos de banco necessários para que possamos receber os dados e tratá-los para obter as informações que queremos. O script de criação dos dados está em `fbd_scripts/fbd_script-total.sql`, e vai gerar o banco de dados que definimos na modelagem.
 
 Para rodar o script, faça o seguinte roteiro:
 
@@ -81,11 +467,36 @@ Para rodar o script, faça o seguinte roteiro:
 
 Além de criar a estrutura de tabelas, o script também carrega a tabela  _Legislatura_ , que já tem valores conhecidos para o nosso problema.
 
+### Dados dos Senadores
+
+#### Tratamento dos arquivos
+
+- Entre no endereço que contém as [legislaturas](https://www25.senado.leg.br/web/senadores/legislaturas-anteriores) do Senado Federal
+- Escolha a legislatura que será importada. No caso em tela, faremos isso para as legislaturas de 53 a 55
+- Em  _Organizar por_ , selecione a opção  _Sexo_ 
+- Selecione os nomes na tela e copie as informações
+- Abra um editor de planilhas da sua preferência e cole as informações nele
+- Acrescente duas colunas à direita dos dados: `Sexo` e `Legislatura`
+- Preencha o valor da coluna `Sexo` de acordo com o o grupo
+- Preencha o valor da coluna `Legislatura` com o número da legislatura pesquisada
+- Apague as linhas que contém os valores Masculino e Feminino
+- Repita o procedimento para cada legislatura
+- Ao terminar de importar os dados das legislaturas anteriores, vá até o endereço da (legislatura atual)[https://www25.senado.leg.br/web/senadores/em-exercicio/-/e/por-sexo]
+- Faça o mesmo tratamento que foi feito para as legislaturas anteriores
+- Retire os caracteres `  *` (dois espaços em branco e um asterisco) da massa de dados. Esse sinal gráfico é pra representar os suplentes que entraram em exercício, e podem impedir que os senadores sejam identificados corretamente. 
+
+#### Importação dos dados para o SGBD
+
+Assim como foi feito para os dados de despesa, os dados de Senadores também devem ser importados utilizando o DBeaver. Repita os passos que foram feitos para a tabela `CARGA_DESPESA`, tendo o cuidado de mapear as colunas do CSV corretamente. 
+
+Há, porém, uma diferença. A tabela `CARGA_SENADOR` possui uma  _trigger_ que vai disparar a cada registro, populando as tabelas `SENADOR`, `MANDATO` e `MANDATO_LEGISLATURA`. A lógica desse gatilho vai se explicada mais à frente.
+
+
 ### Dados brutos de despesa
 
 #### Tratamento dos arquivos
 
-- Baixar os dados do [site](https://www12.senado.leg.br/transparencia/dados-abertos-transparencia/dados-abertos-ceaps). Utilizaremos o período de 2009 a 2021, por estarem mais completos e íntegros
+- Baixar os dados do [site](https://www12.senado.leg.br/transparencia/dados-abertos-transparencia/dados-abertos-ceaps). Utilizaremos o período de 2009 a 2020, por estarem mais completos e íntegros
 - Abra os arquivos `csv` e retire a primeira linha. Ela tem o seguinte formato: `"ULTIMA ATUALIZACAO";"06/08/2021 02:00"`
 
 #### Importação dos dados para o SGBD
@@ -123,31 +534,6 @@ Note que as seguintes propriedades são específicas para o nosso caso:
 
 - Conclua o procedimento, e os dados serão carregados na tabela CARGA_DESPESA
 
-### Dados dos Senadores
-
-O portal do Senado não possui um arquivo pronto com os dados dos Senadores das legislaturas anteriores. Sendo assim, será necessário recuperar esses dados através dos dados que estão nas páginas HTML e formatá-los como CSVs para importação no banco.
-
-#### Tratamento dos arquivos
-
-- Entre no endereço que contém as [legislaturas](https://www25.senado.leg.br/web/senadores/legislaturas-anteriores) do Senado Federal
-- Escolha a legislatura que será importada. No caso em tela, faremos isso para as legislaturas de 53 a 55
-- Em  _Organizar por_ , selecione a opção  _Sexo_ 
-- Selecione os nomes na tela e copie as informações
-- Abra um editor de planilhas da sua preferência e cole as informações nele
-- Acrescente duas colunas à direita dos dados: `Sexo` e `Legislatura`
-- Preencha o valor da coluna `Sexo` de acordo com o o grupo
-- Preencha o valor da coluna `Legislatura` com o número da legislatura pesquisada
-- Apague as linhas que contém os valores Masculino e Feminino
-- Repita o procedimento para cada legislatura
-- Ao terminar de importar os dados das legislaturas anteriores, vá até o endereço da (legislatura atual)[https://www25.senado.leg.br/web/senadores/em-exercicio/-/e/por-sexo]
-- Faça o mesmo tratamento que foi feito para as legislaturas anteriores
-- Retire os caracteres `  *` (dois espaços em branco e um asterisco) da massa de dados. Esse sinal gráfico é pra representar os suplentes que entraram em exercício, e podem impedir que os senadores sejam identificados corretamente. 
-
-#### Importação dos dados para o SGBD
-
-Assim como foi feito para os dados de despesa, os dados de Senadores também devem ser importados utilizando o DBeaver. Repita os passos que foram feitos para a tabela `CARGA_DESPESA`, tendo o cuidado de mapear as colunas do CSV corretamente. 
-
-Há, porém, uma diferença. A tabela `CARGA_SENADOR` possui uma  _trigger_ que vai disparar a cada registro, populando as tabelas `SENADOR`, `MANDATO` e `MANDATO_LEGISLATURA`. A lógica desse gatilho vai se explicada mais à frente.
 
 ### Processo de ETL das despesas
 
