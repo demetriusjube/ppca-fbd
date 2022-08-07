@@ -754,8 +754,6 @@ As consultas foram planejadas para extrair insights relevantes do conjunto de da
 
 #### CONSULTA 1 - Quais senadores mais gastaram em cada legislatura.
 
-consulta 01
-
 A primeira consulta diz respeito aos gastos dos senadores em cada legislatura, e foi feita de modo a recuperar os maiores gastos, por senador.
 
 Consistiu no uso da função sum() em uma consulta na tabela despesa, com o agrupamento de valores por senador, e em seguida classificada. O código da consulta segue a seguir:
@@ -782,7 +780,7 @@ from fbd.LEGISLATURA l;
 
 O resultado da consulta é apresentado a seguir:
 
-![Resultado_Consulta_1](images/consulta1-resultado.PNG)
+![Resultado_Consulta_1](images/consulta01-resultado.PNG)
 
 O insight que despertou atenção foi o total da despesa do senador que figura em primeiro lugar na 53a. legislatura; Os seus gastos figuram como a menor despesa dentre todas as legislaturas. Cabe lembrar que o período das legislaturas, a despeito de ser um período longo, não apresentou índices de inflação que de certa forma justificassem o elevado valor gasto com as legislaturas seguintes. Pode ser necessário um levantamento adicional, com a intenção de se obter o perfil destas despesas, com a intenção de tormar mais claro o motivo da discrepância dos gastos.
 
