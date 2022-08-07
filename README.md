@@ -991,13 +991,18 @@ Outra curiosidade diz respeito ao momento de construção desta consulta: em um 
 ## Conclusão
 
 Este trabalho se propôs a utilizar tecnologias de Sistemas Gerenciadores de Banco de Dados (SGBD), do tipo relacional, para analisar o uso das cotas para atividade parlamentar dos integrantes do Senado Federal (senadores). Por meio da utilzação de SGBD e ferramentas como MySQL e DBeaver, permitiu, com o uso de bases de dados abertos da referida casa legislativa, uma análise do perfil de gastos da cota para exercício da atividade parlamentar - CEAP. Os dados foram coletados, tratados e armazenados no SGBD MySQL. Para as consultas e gerenciamento geral da base foi utilizado o software DBeaver e MySQL Workbench. Os gastos compreendem as legislaturas de número 53 a 56, nos anos de 2007 a 2020.
-Durante a atividade de coleta e tratamento de dados, as principais dificuldades encontradas foi a ausência de alguns dados para complementar a carga das tabelas, tendo sido necessário fazer uma coleta manual nas páginas html. Também foi preciso limitar as legislaturas, por motivos de diferenças de padronização. Outro ponto foi a prática com a ferramenta, bem como os conhecimentos de álgebra relacional por parte dos integrantes. 
+
+Durante a atividade de coleta e tratamento de dados, as principais dificuldades encontradas foi a ausência de alguns dados para complementar a carga das tabelas, tendo sido necessário fazer uma coleta manual nas páginas html. Também foi preciso limitar as legislaturas, por motivos de diferenças de padronização. Outro ponto foi a prática com a ferramenta, bem como os conhecimentos de álgebra relacional por parte dos integrantes.
+
 Através da elaboração de uma view e de consultas complementares, os dados tratados forneceram um perfil de gastos da atividade parlamentar, tendo as despesas com transportes se apresentando como a maior categoria em volume de gastos. Por sua vez, fornecedores como companhias aéreas, agências de turismo e locadoras se apresentam como os que mais receberam recursos.
+
 Como sugestão de estudos futuros, pode-se propor a construção de consultas mais elaboradas e complexas, bem como a ampliação da base de dados compreendento um período maior, com mais legislaturas.
 
 ## Referências
 
+BRASIL. Conselho de Transparência. Senado Federal. Dados Abertos - CEAPS: transparência. Transparência. 2022. Conselho de Transparência e Controle Social. Disponível em: https://www12.senado.leg.br/transparencia/dados-abertos-transparencia/dados-abertos-ceaps. Acesso em: 06 jul. 2022.
 
+BRASIL. Senado Federal. Primeira Secretaria do Senado. APS 5/2014: instruções sobre reembolso da cota para o exercício da atividade parlamentar - ceap. Instruções sobre reembolso da Cota para o Exercício da Atividade Parlamentar - CEAP. 2014. Atos Normativos. Disponível em: https://adm.senado.leg.br/normas/ui/pub/normaConsultada?idNorma=203003. Acesso em: 9 jul. 2022.
 
 
 
