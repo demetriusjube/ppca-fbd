@@ -752,12 +752,83 @@ Nesse gráfico, fica fácil observar que, no período indicado, os tipos de desp
 
 As consultas foram planejadas para extrair insights relevantes do conjunto de dados disponível, bem como possibilitar a realização de consultas complexas com uso de operadores de agregação agrupados por múltiplos critérios, bem como junções (inclusive uma interseção), projeções e novas seleções sobre resultados de consultas.
 
-#### CONSULTA 1 - Quais senadores mais gastaram em cada legislatura. (Marcos) 
+#### CONSULTA 1 - Quais senadores mais gastaram em cada legislatura.
+
+consulta 01
+
+A primeira consulta diz respeito aos gastos dos senadores em cada legislatura, e foi feita de modo a recuperar os maiores gastos, por senador.
+
+Consistiu no uso da função sum() em uma consulta na tabela despesa, com o agrupamento de valores por senador, e em seguida classificada. O código da consulta segue a seguir:
+
+```sql
+/* consulta 01 - quais senadores mais gastaram em cada legislatura*/
+select NR_LEGISLATURA, ANO_INICIO, ANO_FIM, 
+	(select s.NOME from fbd.SENADOR s where s.ID_SENADOR = (
+		select d1.ID_SENADOR 
+		from fbd.DESPESA d1
+		where ANO >= l.ANO_INICIO and ANO < l.ANO_FIM 
+		group by d1.ID_SENADOR
+		order by sum(d1.VALOR_REEMBOLSADO) desc limit 1)
+	) as SENADOR,
+	
+	(select sum(d2.VALOR_REEMBOLSADO)
+	 from fbd.DESPESA d2
+	 where ANO >= l.ANO_INICIO and ANO < l.ANO_FIM 
+	 group by d2.ID_SENADOR
+	 order by sum(d2.VALOR_REEMBOLSADO) desc limit 1)
+	 as VALOR
+from fbd.LEGISLATURA l;
+```
+
+O resultado da consulta é apresentado a seguir:
+
+![Resultado_Consulta_1](images/consulta1-resultado.PNG)
+
+O insight que despertou atenção foi o total da despesa do senador que figura em primeiro lugar na 53a. legislatura; Os seus gastos figuram como a menor despesa dentre todas as legislaturas. Cabe lembrar que o período das legislaturas, a despeito de ser um período longo, não apresentou índices de inflação que de certa forma justificassem o elevado valor gasto com as legislaturas seguintes. Pode ser necessário um levantamento adicional, com a intenção de se obter o perfil destas despesas, com a intenção de tormar mais claro o motivo da discrepância dos gastos.
 
 
 
-#### CONSULTA 2 - Quem é o fornecedor que mais ganhou dinheiro e quais senadores mais contrataram um dado fornecedor. (Marcos)
+#### CONSULTA 2 - Quem é o fornecedor que mais recebeu recursos e quais senadores mais contrataram um dado fornecedor.
 
+A segunda consulta, dizem respeito ao fornecedor que mais recebeu recursos e quais senadores contrataram um dado fornecedor.
+
+A primeira delas foi realizada com o uso da função sum() e também com uma junção interna (inner join) com as tabelas de fornecedor, e agrupando os valores de fornecedor, seus nomes e respectivo CNPJ:
+
+```sql
+/* consulta 02-a - fornecedores que mais receberam recursos */
+select f.ID_FORNECEDOR , f.NOME, f.CPF_CNPJ, sum(d.VALOR_REEMBOLSADO) as VALOR
+from fbd.DESPESA d
+	inner join fbd.FORNECEDOR f on f.ID_FORNECEDOR = d.ID_FORNECEDOR 
+group by f.ID_FORNECEDOR , f.NOME, f.CPF_CNPJ
+order by VALOR desc;
+```
+
+O resultado da consulta é apresentado a seguir:
+
+![Resultado_Consulta_2a](images/consulta2a-resultado.PNG)
+
+Em relação a estas despesas se observa o maior quantitativo entre empresas aéreas, agências de viagem, de turismo e locadoras; chamou também a atenção uma despesa com gastos de companhias telefônicas.
+Outro ponto interessante é o recebimento por parte de uma pessoa fisica, cujo CPF figura como entidade que também recebeu recursos. Com o advento da LGPD, ainda não se sabe se gastos com valores de pessoas físicas irão figurar no futuro de forma tão extensiva e aberta como neste estudo.
+
+
+A segunda consulta foi realizada para se descobrir quais fornecedores mais contrataram um dado fornecedor. Para tal foi usada a função count() combinando o uso de junções internas entre as tabelas FORNECEDOR e SENADOR:
+
+```sql
+/* consulta 02-b - senadores que mais contrataram um dado fornecedor*/
+select s.NOME , f.NOME , count(d.ID_FORNECEDOR ) QTD_CONTRATADO 
+from fbd.DESPESA d 
+	inner join fbd.SENADOR s ON s.ID_SENADOR = d.ID_SENADOR
+	inner join fbd.FORNECEDOR f ON f.ID_FORNECEDOR = d.ID_FORNECEDOR 
+where d.ID_FORNECEDOR is not null  
+group by d.ID_SENADOR , d.ID_FORNECEDOR
+order by QTD_CONTRATADO desc;
+```
+
+O resultado da consulta é apresentado a seguir:
+
+![Resultado_Consulta_2b](images/consulta2b-resultado.PNG)
+
+Para o caso desta consulta, chama a atenção de fornecedores semelhantes e com grande número de contratos, bem como senadores com uma quantidade elevada de contratos com fornecedores. Como perfil das empresas, se revelam revendas de combustíveis (postos), empresas de turismo e companhias aéreas.
 
 
 #### CONSULTA 3 - Para um mesmo tipo de despesa e um mesmo fornecedor, verificar se há divergências nos preços cobrados entre os senadores.
@@ -846,10 +917,77 @@ As variações mais significativas foram apresentadas nos gráficos abaixos.
 ![Despesa_Auto_Posto_Jane](images/despesa-auto-posto-jane.PNG)
 
 
-#### CONSULTA 4 - Quantidade média de gastos por senador e por partido. (Marcos)
+#### CONSULTA 4 - Quantidade média de gastos por senador e por partido.
+
+Para a quarta consulta quis se obter as médias de gastos por senadores e por partidos. Nos dois casos figurou o uso da função avg() seguida do uso de junções, agrupamento (group by) e classificação descendente (order by, desc). Para o primeiro caso, segue o código da consulta:
+
+```sql
+/* Consulta 04a - Quantidade média de gastos por senador */
+select
+	s.NOME , avg(d.VALOR_REEMBOLSADO) as MEDIA_GASTO
+from fbd.DESPESA d
+	inner join SENADOR s on s.ID_SENADOR = d.ID_SENADOR 
+group by s.NOME
+order by MEDIA_GASTO desc;
+```
+
+O resultado da consulta é apresentado a seguir:
+
+![Resultado_Consulta_4a](images/consulta4a-resultado.PNG)
+
+Como insight desta consulta, os primeiros vinte colocados apresentam uma média de despesas acima de R$3.000,00 (três mil Reais), com o primeiro da lista com gastos médios de R$12.000,00 (doze mil Reais).
+
+A outra consulta deste ponto teve o mesmo critério (média de despesas), mas tendo o partido como ponto de agrupamento
+
+```sql
+/* Consulta 04b - Quantidade média de gastos por partido */
+select m.PARTIDO , avg(d.VALOR_REEMBOLSADO) 
+from fbd.MANDATO m
+	inner join SENADOR s on s.ID_SENADOR  = m.ID_MANDATO 
+	inner join DESPESA d on d.ID_SENADOR = m.ID_SENADOR 
+group by m.PARTIDO 	
+order by m.PARTIDO;
+```
+
+A seguir o resultado da consulta:
+
+![Resultado_Consulta_4b](images/consulta4b-resultado.PNG)
+
+O que se pode observar destes resultados é que os valores máximos são menores, quando comparados com os gastos por senador.
 
 
+#### CONSULTA 5 - Evolução de percentual de parlamentares de cada gênero por legislatura.
 
-#### CONSULTA 5 - Evolução de percentual de parlamentares de cada gênero por legislatura. (Marcos)
+A última consulta visa obter a evolução da participação de senadores do sexo feminino ao longo das legislaturas. Para isto foi usada a função concat() combinada com o uso de count() para a variável sexo na tabela SENADOR. a divisão dos resultados destas funções resultou no percentual dos parlamentares por sexo, para cada legislatura:
+
+```sql
+/* Consulta 05 - Evolução de percentual de parlamentares */ 
+/*               de cada gênero por legislatura.         */
+select 
+	ml.NR_LEGISLATURA , concat(l.ANO_INICIO, " - ", l.ANO_FIM) as LEGISLATURA , s.SEXO, count(ml.NR_LEGISLATURA) as TOTAL_POR_SEXO, 
+	(count(ml.NR_LEGISLATURA) / (
+		select  count(s_s.SEXO)
+		from fbd.MANDATO_LEGISLATURA s_ml 
+			inner join fbd.MANDATO s_m on s_m.ID_MANDATO = s_ml.ID_MANDATO
+			inner join fbd.SENADOR s_s on s_s.ID_SENADOR  = s_m.ID_SENADOR 
+		where s_m.LEGISLATURA = ml.NR_LEGISLATURA
+	)) * 100  as PORCENTAGEM
+# CONSULTA 5 - CONTINUACAO	
+from fbd.MANDATO_LEGISLATURA ml
+	inner join fbd.LEGISLATURA l on l.NR_LEGISLATURA = ml.NR_LEGISLATURA 
+	inner join fbd.MANDATO m on m.ID_MANDATO = ml.ID_MANDATO
+	inner join fbd.SENADOR s on s.ID_SENADOR  = m.ID_SENADOR 
+group by s.SEXO, l.NR_LEGISLATURA 	
+order by l.NR_LEGISLATURA;
+```
+
+A seguir o resultado da consulta:
+
+![Resultado_Consulta_5](images/consulta5-resultado.PNG)
+
+Com o resultado desta consulta, a 53a. legislatura tinha um percentual de 13,39 por cento de mulheres, e na última legislatura este valor aumentou para 18,52%, traduzindo-se um aumento de 5,13 pontos percentuais. Pode se notar também a tendência de aumento ao longo das legislaturas, com exceção de uma queda na 54a. legislatura, quando a participação das mulheres na casa legislativa foi de 12,50% dos mandatos. Observa-se ainda Um aumento de 4,82% para a atual legislatura quando comparada com a anterior.
+
+Outra curiosidade diz respeito ao momento de construção desta consulta: em um dado momento constatou-se que o número de senadores é sempre maior que 81, diferente do número de mandatos; Isto se deve ao fato dos suplentes assumirem os mandatos em casos de cassação, renúncia, licenciamento ou morte dos senadores titulares do mandato.
+
 
 
