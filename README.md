@@ -988,4 +988,16 @@ Com o resultado desta consulta, a 53a. legislatura tinha um percentual de 13,39 
 Outra curiosidade diz respeito ao momento de construção desta consulta: em um dado momento constatou-se que o número de senadores é sempre maior que 81, diferente do número de mandatos; Isto se deve ao fato dos suplentes assumirem os mandatos em casos de cassação, renúncia, licenciamento ou morte dos senadores titulares do mandato.
 
 
+## Conclusão
+
+Este trabalho se propôs a utilizar tecnologias de Sistemas Gerenciadores de Banco de Dados (SGBD), do tipo relacional, para analisar o uso das cotas para atividade parlamentar dos integrantes do Senado Federal (senadores). Por meio da utilzação de SGBD e ferramentas como MySQL e DBeaver, permitiu, com o uso de bases de dados abertos da referida casa legislativa, uma análise do perfil de gastos da cota para exercício da atividade parlamentar - CEAP. Os dados foram coletados, tratados e armazenados no SGBD MySQL. Para as consultas e gerenciamento geral da base foi utilizado o software DBeaver e MySQL Workbench. Os gastos compreendem as legislaturas de número 53 a 56, nos anos de 2007 a 2020.
+Durante a atividade de coleta e tratamento de dados, as principais dificuldades encontradas foi a ausência de alguns dados para complementar a carga das tabelas, tendo sido necessário fazer uma coleta manual nas páginas html. Também foi preciso limitar as legislaturas, por motivos de diferenças de padronização. Outro ponto foi a prática com a ferramenta, bem como os conhecimentos de álgebra relacional por parte dos integrantes. 
+Através da elaboração de uma view e de consultas complementares, os dados tratados forneceram um perfil de gastos da atividade parlamentar, tendo as despesas com transportes se apresentando como a maior categoria em volume de gastos. Por sua vez, fornecedores como companhias aéreas, agências de turismo e locadoras se apresentam como os que mais receberam recursos.
+Como sugestão de estudos futuros, pode-se propor a construção de consultas mais elaboradas e complexas, bem como a ampliação da base de dados compreendento um período maior, com mais legislaturas.
+
+## Referências
+
+
+
+
 
