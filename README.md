@@ -137,7 +137,8 @@ CREATE TABLE fbd.MANDATO (
 	LEGISLATURA SMALLINT NULL,
 	PARTIDO varchar(100) NULL,
 	CONSTRAINT MANDATO_PK PRIMARY KEY (ID_MANDATO),
-	CONSTRAINT MANDATO_FK FOREIGN KEY (ID_SENADOR) REFERENCES fbd.SENADOR(ID_SENADOR)
+	CONSTRAINT MANDATO_FK FOREIGN KEY (ID_SENADOR) 
+	    REFERENCES fbd.SENADOR(ID_SENADOR)
 )
 ENGINE=InnoDB
 DEFAULT CHARSET=utf8mb4
@@ -149,9 +150,12 @@ AUTO_INCREMENT=1;
 CREATE TABLE fbd.MANDATO_LEGISLATURA (
 	ID_MANDATO BIGINT NOT NULL,
 	NR_LEGISLATURA SMALLINT NOT NULL,
-	CONSTRAINT MANDATO_LEGISLATURA_PK PRIMARY KEY (ID_MANDATO,NR_LEGISLATURA),
-	CONSTRAINT MANDATO_LEGISLATURA_MANDATO_FK FOREIGN KEY (ID_MANDATO) REFERENCES fbd.MANDATO(ID_MANDATO),
-	CONSTRAINT MANDATO_LEGISLATURA_LEGISLATURA_FK FOREIGN KEY (NR_LEGISLATURA) REFERENCES fbd.LEGISLATURA(NR_LEGISLATURA)
+	CONSTRAINT MANDATO_LEGISLATURA_PK 
+	    PRIMARY KEY (ID_MANDATO,NR_LEGISLATURA),
+	CONSTRAINT MANDATO_LEGISLATURA_MANDATO_FK 
+	    FOREIGN KEY (ID_MANDATO) REFERENCES fbd.MANDATO(ID_MANDATO),
+	CONSTRAINT MANDATO_LEGISLATURA_LEGISLATURA_FK 
+	    FOREIGN KEY (NR_LEGISLATURA) REFERENCES fbd.LEGISLATURA(NR_LEGISLATURA)
 )
 ENGINE=InnoDB
 DEFAULT CHARSET=utf8mb4
@@ -172,9 +176,12 @@ CREATE TABLE fbd.DESPESA (
 	COD_DOCUMENTO varchar(100) NOT NULL,
 	VALOR_REEMBOLSADO decimal(15,2) NOT NULL,
 	CONSTRAINT DESPESA_PK PRIMARY KEY (ID_DESPESA),
-	CONSTRAINT DESPESA_SENADOR_FK FOREIGN KEY (ID_SENADOR) REFERENCES fbd.SENADOR(ID_SENADOR),
-	CONSTRAINT DESPESA_FORNECEDOR_FK FOREIGN KEY (ID_FORNECEDOR) REFERENCES fbd.FORNECEDOR(ID_FORNECEDOR),
-	CONSTRAINT DESPESA_TIPO_DESPESA_FK FOREIGN KEY (ID_TIPO_DESPESA) REFERENCES fbd.TIPO_DESPESA(ID_TIPO_DESPESA),
+	CONSTRAINT DESPESA_SENADOR_FK FOREIGN KEY (ID_SENADOR) 
+	    REFERENCES fbd.SENADOR(ID_SENADOR),
+	CONSTRAINT DESPESA_FORNECEDOR_FK FOREIGN KEY (ID_FORNECEDOR) 
+	    REFERENCES fbd.FORNECEDOR(ID_FORNECEDOR),
+	CONSTRAINT DESPESA_TIPO_DESPESA_FK FOREIGN KEY (ID_TIPO_DESPESA) 
+	    REFERENCES fbd.TIPO_DESPESA(ID_TIPO_DESPESA),
 	CONSTRAINT DESPESA_CODIGO_UN UNIQUE KEY (COD_DOCUMENTO)
 )
 ENGINE=InnoDB
@@ -286,19 +293,20 @@ BEGIN
 			-- Verifica se foi informado um fornecedor
 			IF (v_cnpjCpf IS NOT NULL AND TRIM(v_cnpjCpf) <> '') THEN
 			-- Verifica se o fornecedor já está na base. Se não estiver, insere
-				SET cpfCnpjLimpo = 
-				TRIM(REPLACE(REPLACE(REPLACE(v_cnpjCPf, '.', ''),'-',''),'/',''));
-				-- SELECT CONCAT('Verificando fornecedor com cpfCnpj ', cpfCnpjLimpo);
-				SELECT ID_FORNECEDOR INTO idFornecedor FROM FORNECEDOR 
-				    WHERE TRIM(CPF_CNPJ) = cpfCnpjLimpo COLLATE utf8mb4_0900_as_ci;
-				-- SELECT CONCAT('Fornecedor: ', idFornecedor);
-				IF (idFornecedor IS NULL) THEN
-					INSERT INTO FORNECEDOR (NOME, CPF_CNPJ) 
-					VALUES (v_fornecedor, cpfCnpjLimpo);
-					SET idFornecedor = LAST_INSERT_ID();
-					-- SELECT CONCAT('Fornecedor ', v_fornecedor, 
-					--' inserido com id ', idFornecedor);
-				END IF;
+			SET cpfCnpjLimpo = 
+			TRIM(REPLACE(REPLACE(REPLACE(v_cnpjCPf, '.', ''),'-',''),'/',''));
+			-- SELECT CONCAT('Verificando fornecedor com cpfCnpj ', cpfCnpjLimpo);
+			SELECT ID_FORNECEDOR INTO idFornecedor FROM FORNECEDOR 
+			    WHERE TRIM(CPF_CNPJ) = cpfCnpjLimpo COLLATE utf8mb4_0900_as_ci;
+			-- SELECT CONCAT('Fornecedor: ', idFornecedor);
+			IF (idFornecedor IS NULL) THEN
+				INSERT INTO FORNECEDOR (NOME, CPF_CNPJ) 
+				VALUES (v_fornecedor, cpfCnpjLimpo);
+				SET idFornecedor = LAST_INSERT_ID();
+				-- SELECT CONCAT('Fornecedor ', v_fornecedor, 
+				--' inserido com id ', idFornecedor);
+			END IF;
+			
 			END IF;
 		
 			-- Verifica se o tipo de despesa já está na base
@@ -324,7 +332,8 @@ BEGIN
 			    VALUES (v_ano, v_mes, idSenador, idFornecedor, 
 			    idTipoDespesa, v_dataReembolso, 
 			    v_detalhamento ,v_documento, v_codDocumento, v_valorReembolsado);
-			-- Limpa as variáveis para garantir que a verificação será feita corretamente
+			-- Limpa as variáveis para garantir que a verificação 
+			-- será feita corretamente
 			SET idFornecedor = NULL;
 			SET idTipoDespesa = NULL;
 			SET total = total +1;
@@ -350,9 +359,11 @@ FOR EACH ROW begin
 	    WHERE d.COD_DOCUMENTO = new.COD_DOCUMENTO;    
 	
 	IF (v_id_despesa = 0) then
-		CALL fbd.PRC_INCLUSAO_DESPESA (new.ANO, new.MES, new.SENADOR, new.TIPO_DESPESA, 
+		CALL fbd.PRC_INCLUSAO_DESPESA (new.ANO, new.MES, new.SENADOR, 
+		    new.TIPO_DESPESA, 
 		    new.CNPJ_CPF, 
-		    new.FORNECEDOR, new.DOCUMENTO, new.DATA_REEMBOLSO, new.DETALHAMENTO, 
+		    new.FORNECEDOR, new.DOCUMENTO, new.DATA_REEMBOLSO, 
+		    new.DETALHAMENTO, 
 		    new.VALOR_REEMBOLSADO, 
 		    new.COD_DOCUMENTO);
 	end if; 
@@ -392,7 +403,7 @@ BEGIN
 		IF (v_cnpjCpf IS NOT NULL AND TRIM(v_cnpjCpf) <> '') THEN
 		-- Verifica se o fornecedor já está na base. Se não estiver, insere
 			SET cpfCnpjLimpo = 
-			    TRIM(REPLACE(REPLACE(REPLACE(v_cnpjCPf, '.', ''),'-',''),'/',''));
+			TRIM(REPLACE(REPLACE(REPLACE(v_cnpjCPf, '.', ''),'-',''),'/',''));
 			-- SELECT CONCAT('Verificando fornecedor com cpfCnpj ', cpfCnpjLimpo);
 			SELECT ID_FORNECEDOR INTO idFornecedor FROM FORNECEDOR 
 			    WHERE TRIM(CPF_CNPJ) = cpfCnpjLimpo COLLATE utf8mb4_0900_as_ci;
@@ -421,8 +432,10 @@ BEGIN
 		
 		-- SELECT CONCAT ('Ano: ', v_ano);
 		-- Insere os dados na tabela DESPESA
-		INSERT INTO DESPESA (ANO, MES, ID_SENADOR, ID_FORNECEDOR, ID_TIPO_DESPESA, 
-		    DATA_REEMBOLSO, DETALHAMENTO , DOCUMENTO, COD_DOCUMENTO, VALOR_REEMBOLSADO)
+		INSERT INTO DESPESA (ANO, MES, ID_SENADOR, 
+		    ID_FORNECEDOR, ID_TIPO_DESPESA, 
+		    DATA_REEMBOLSO, DETALHAMENTO , DOCUMENTO, 
+		    COD_DOCUMENTO, VALOR_REEMBOLSADO)
 		    VALUES (v_ano, v_mes, idSenador, idFornecedor, idTipoDespesa, 
 		    v_dataReembolso, v_detalhamento ,
 		    v_documento, v_codDocumento, v_valorReembolsado);
@@ -625,7 +638,7 @@ BEGIN
 		IF (v_cnpjCpf IS NOT NULL AND TRIM(v_cnpjCpf) <> '') THEN
 		-- Verifica se o fornecedor já está na base. Se não estiver, insere
 			SET cpfCnpjLimpo = 
-			    TRIM(REPLACE(REPLACE(REPLACE(v_cnpjCPf, '.', ''),'-',''),'/',''));
+			TRIM(REPLACE(REPLACE(REPLACE(v_cnpjCPf, '.', ''),'-',''),'/',''));
 			SELECT ID_FORNECEDOR INTO idFornecedor FROM FORNECEDOR 
 			    WHERE TRIM(CPF_CNPJ) = cpfCnpjLimpo COLLATE utf8mb4_0900_as_ci;
 			IF (idFornecedor IS NULL) THEN
@@ -646,9 +659,9 @@ BEGIN
 		
 		-- Insere os dados na tabela DESPESA
 		INSERT INTO DESPESA (ANO, MES, ID_SENADOR, ID_FORNECEDOR, ID_TIPO_DESPESA, 
-		    DATA_REEMBOLSO, DETALHAMENTO , DOCUMENTO, COD_DOCUMENTO, VALOR_REEMBOLSADO)
-		    VALUES (v_ano, v_mes, idSenador, idFornecedor, idTipoDespesa, v_dataReembolso, 
-		    v_detalhamento ,v_documento, v_codDocumento, v_valorReembolsado);
+		DATA_REEMBOLSO, DETALHAMENTO , DOCUMENTO, COD_DOCUMENTO, VALOR_REEMBOLSADO)
+		VALUES (v_ano, v_mes, idSenador, idFornecedor, idTipoDespesa, v_dataReembolso, 
+		v_detalhamento ,v_documento, v_codDocumento, v_valorReembolsado);
 		
 		
 		COMMIT;
@@ -921,7 +934,8 @@ from (
            round((sum(d.VALOR_REEMBOLSADO) / count(d.MES)),2) as valor_medio, 
 	   sum(d.VALOR_REEMBOLSADO) as valor_total, count(d.mes) as nr_parcelas 
         from fbd.tipo_despesa td, fbd.despesa d, fbd.fornecedor f, fbd.senador s 
-        where td.ID_TIPO_DESPESA = d.ID_TIPO_DESPESA and d.ID_FORNECEDOR = f.ID_FORNECEDOR and 
+        where td.ID_TIPO_DESPESA = d.ID_TIPO_DESPESA and 
+	      d.ID_FORNECEDOR = f.ID_FORNECEDOR and 
 	      d.ID_SENADOR = s.ID_SENADOR 
         group by td.ID_TIPO_DESPESA, f.ID_FORNECEDOR, s.ID_SENADOR) u1, 
      (
@@ -931,15 +945,19 @@ from (
 	   round((sum(d.VALOR_REEMBOLSADO) / count(d.MES)),2) as valor_medio, 
 	   sum(d.VALOR_REEMBOLSADO) as valor_total, count(d.mes) as nr_parcelas
         from fbd.tipo_despesa td, fbd.despesa d, fbd.fornecedor f, fbd.senador s
-        where td.ID_TIPO_DESPESA = d.ID_TIPO_DESPESA and d.ID_FORNECEDOR = f.ID_FORNECEDOR and 
+        where td.ID_TIPO_DESPESA = d.ID_TIPO_DESPESA and 
+	      d.ID_FORNECEDOR = f.ID_FORNECEDOR and 
 	      d.ID_SENADOR = s.ID_SENADOR
         group by td.ID_TIPO_DESPESA, f.ID_FORNECEDOR, s.ID_SENADOR) u2, 
     fbd.senador s1, fbd.senador s2
 /* Codições do SQL externo para fazer a junção entre as consultas de senadores. 
-   Optou-se por comparar os senadores em uma linha para facilitar o entendimento e o encontro das 
-   discrepâncias de valores pagos a um mesmo fornecedor em um mesmo tipo de despesa. 
-   Com isso, a seleção externa compara os valores de de id_senador diferente em cada tabela. */    
-where u1.id_fornecedor = u2.id_fornecedor and u1.id_tipo_despesa = u2.id_tipo_despesa and 
+   Optou-se por comparar os senadores em uma linha para facilitar o 
+   entendimento e o encontro das discrepâncias de valores pagos a um mesmo 
+   fornecedor em um mesmo tipo de despesa. 
+   Com isso, a seleção externa compara os valores de de id_senador 
+   diferente em cada tabela. */    
+where u1.id_fornecedor = u2.id_fornecedor and 
+      u1.id_tipo_despesa = u2.id_tipo_despesa and 
       u1.id_senador != u2.id_senador and u1.id_senador = s1.ID_SENADOR and 
       u2.id_senador = s2.id_senador and u1.nr_parcelas = u2.nr_parcelas and
       ((u1.valor_medio > (u2.valor_medio*10)) OR (u2.valor_medio > (u1.valor_medio*10)))
