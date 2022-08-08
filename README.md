@@ -292,12 +292,16 @@ BEGIN
 		
 			-- Verifica se foi informado um fornecedor
 			IF (v_cnpjCpf IS NOT NULL AND TRIM(v_cnpjCpf) <> '') THEN
-			-- Verifica se o fornecedor já está na base. Se não estiver, insere
+			-- Verifica se o fornecedor já está na base. Se não estiver,
+			-- insere
 			SET cpfCnpjLimpo = 
-			TRIM(REPLACE(REPLACE(REPLACE(v_cnpjCPf, '.', ''),'-',''),'/',''));
-			-- SELECT CONCAT('Verificando fornecedor com cpfCnpj ', cpfCnpjLimpo);
+			  TRIM(REPLACE(REPLACE(REPLACE
+			    (v_cnpjCPf, '.', ''),'-',''),'/',''));
+			-- SELECT CONCAT('Verificando fornecedor com cpfCnpj ', 
+			--   cpfCnpjLimpo);
 			SELECT ID_FORNECEDOR INTO idFornecedor FROM FORNECEDOR 
-			    WHERE TRIM(CPF_CNPJ) = cpfCnpjLimpo COLLATE utf8mb4_0900_as_ci;
+			    WHERE TRIM(CPF_CNPJ) = cpfCnpjLimpo 
+			    COLLATE utf8mb4_0900_as_ci;
 			-- SELECT CONCAT('Fornecedor: ', idFornecedor);
 			IF (idFornecedor IS NULL) THEN
 				INSERT INTO FORNECEDOR (NOME, CPF_CNPJ) 
@@ -310,17 +314,21 @@ BEGIN
 			END IF;
 		
 			-- Verifica se o tipo de despesa já está na base
-			-- SELECT CONCAT('Verificando tipo de despesa', v_tipoDespesa);
+			-- SELECT CONCAT('Verificando tipo de despesa', 
+			-- v_tipoDespesa);
 			SELECT ID_TIPO_DESPESA INTO idTipoDespesa 
 			    FROM TIPO_DESPESA 
-			    WHERE TRIM(UPPER(DESCRICAO)) = TRIM(UPPER(v_tipoDespesa)) 
+			    WHERE TRIM(UPPER(DESCRICAO)) = 
+			        TRIM(UPPER(v_tipoDespesa)) 
 			    COLLATE utf8mb4_0900_as_ci;
 			-- SELECT CONCAT('Tipo de despesa: ', idFornecedor);
 			IF (idTipoDespesa IS NULL) THEN
-				INSERT INTO TIPO_DESPESA (DESCRICAO) VALUES (v_tipoDespesa);
+				INSERT INTO TIPO_DESPESA (DESCRICAO) 
+				VALUES (v_tipoDespesa);
 				SET idTipoDespesa = LAST_INSERT_ID(); 
 				-- SELECT CONCAT('Tipo de despesa ', 
-				-- v_tipoDespesa, ' inserido com id ', idTipoDespesa);
+				-- v_tipoDespesa, ' inserido com id ', 
+				-- idTipoDespesa);
 			END IF;
 			
 			-- SELECT CONCAT ('Ano: ', v_ano);
@@ -331,7 +339,8 @@ BEGIN
 			    VALOR_REEMBOLSADO)
 			    VALUES (v_ano, v_mes, idSenador, idFornecedor, 
 			    idTipoDespesa, v_dataReembolso, 
-			    v_detalhamento ,v_documento, v_codDocumento, v_valorReembolsado);
+			    v_detalhamento ,v_documento, v_codDocumento, 
+			    v_valorReembolsado);
 			-- Limpa as variáveis para garantir que a verificação 
 			-- será feita corretamente
 			SET idFornecedor = NULL;
@@ -351,7 +360,8 @@ BEGIN
 
 END  $$
 
-CREATE DEFINER=`root`@`%` TRIGGER `TRG_CARGA_DESPESA` AFTER INSERT ON `CARGA_DESPESA` 
+CREATE DEFINER=`root`@`%` TRIGGER `TRG_CARGA_DESPESA` 
+AFTER INSERT ON `CARGA_DESPESA` 
 FOR EACH ROW begin
     DECLARE v_id_despesa int default 0;
    
@@ -401,12 +411,16 @@ BEGIN
 	
 		-- Verifica se foi informado um fornecedor
 		IF (v_cnpjCpf IS NOT NULL AND TRIM(v_cnpjCpf) <> '') THEN
-		-- Verifica se o fornecedor já está na base. Se não estiver, insere
+		-- Verifica se o fornecedor já está na base. Se não estiver, 
+		-- insere
 			SET cpfCnpjLimpo = 
-			TRIM(REPLACE(REPLACE(REPLACE(v_cnpjCPf, '.', ''),'-',''),'/',''));
-			-- SELECT CONCAT('Verificando fornecedor com cpfCnpj ', cpfCnpjLimpo);
+			  TRIM(REPLACE(REPLACE(REPLACE(
+			    v_cnpjCPf, '.', ''),'-',''),'/',''));
+			-- SELECT CONCAT('Verificando fornecedor com cpfCnpj ', 
+			--   cpfCnpjLimpo);
 			SELECT ID_FORNECEDOR INTO idFornecedor FROM FORNECEDOR 
-			    WHERE TRIM(CPF_CNPJ) = cpfCnpjLimpo COLLATE utf8mb4_0900_as_ci;
+			    WHERE TRIM(CPF_CNPJ) = cpfCnpjLimpo 
+			    COLLATE utf8mb4_0900_as_ci;
 			-- SELECT CONCAT('Fornecedor: ', idFornecedor);
 			IF (idFornecedor IS NULL) THEN
 				INSERT INTO FORNECEDOR (NOME, CPF_CNPJ) 
@@ -424,7 +438,8 @@ BEGIN
 		    COLLATE utf8mb4_0900_as_ci;
 		-- SELECT CONCAT('Tipo de despesa: ', idFornecedor);
 		IF (idTipoDespesa IS NULL) THEN
-			INSERT INTO TIPO_DESPESA (DESCRICAO) VALUES (v_tipoDespesa);
+			INSERT INTO TIPO_DESPESA (DESCRICAO) VALUES 
+			    (v_tipoDespesa);
 			SET idTipoDespesa = LAST_INSERT_ID(); 
 			-- SELECT CONCAT('Tipo de despesa ', v_tipoDespesa, 
 			-- ' inserido com id ', idTipoDespesa);
@@ -636,11 +651,14 @@ BEGIN
 	
 		-- Verifica se foi informado um fornecedor
 		IF (v_cnpjCpf IS NOT NULL AND TRIM(v_cnpjCpf) <> '') THEN
-		-- Verifica se o fornecedor já está na base. Se não estiver, insere
+		-- Verifica se o fornecedor já está na base. 
+		-- Se não estiver, insere
 			SET cpfCnpjLimpo = 
-			TRIM(REPLACE(REPLACE(REPLACE(v_cnpjCPf, '.', ''),'-',''),'/',''));
+			  TRIM(REPLACE(REPLACE(REPLACE(
+			    v_cnpjCPf, '.', ''),'-',''),'/',''));
 			SELECT ID_FORNECEDOR INTO idFornecedor FROM FORNECEDOR 
-			    WHERE TRIM(CPF_CNPJ) = cpfCnpjLimpo COLLATE utf8mb4_0900_as_ci;
+			    WHERE TRIM(CPF_CNPJ) = cpfCnpjLimpo 
+			    COLLATE utf8mb4_0900_as_ci;
 			IF (idFornecedor IS NULL) THEN
 				INSERT INTO FORNECEDOR (NOME, CPF_CNPJ) 
 				    VALUES (v_fornecedor, cpfCnpjLimpo);
@@ -653,15 +671,20 @@ BEGIN
 		    WHERE TRIM(UPPER(DESCRICAO)) = TRIM(UPPER(v_tipoDespesa)) 
 		    COLLATE utf8mb4_0900_as_ci;
 		IF (idTipoDespesa IS NULL) THEN
-			INSERT INTO TIPO_DESPESA (DESCRICAO) VALUES (v_tipoDespesa);
+			INSERT INTO TIPO_DESPESA (DESCRICAO) 
+			    VALUES (v_tipoDespesa);
 			SET idTipoDespesa = LAST_INSERT_ID(); 
 		END IF;
 		
 		-- Insere os dados na tabela DESPESA
-		INSERT INTO DESPESA (ANO, MES, ID_SENADOR, ID_FORNECEDOR, ID_TIPO_DESPESA, 
-		DATA_REEMBOLSO, DETALHAMENTO , DOCUMENTO, COD_DOCUMENTO, VALOR_REEMBOLSADO)
-		VALUES (v_ano, v_mes, idSenador, idFornecedor, idTipoDespesa, v_dataReembolso, 
-		v_detalhamento ,v_documento, v_codDocumento, v_valorReembolsado);
+		INSERT INTO DESPESA (ANO, MES, ID_SENADOR, 
+		    ID_FORNECEDOR, ID_TIPO_DESPESA, 
+		    DATA_REEMBOLSO, DETALHAMENTO , DOCUMENTO, 
+		    COD_DOCUMENTO, VALOR_REEMBOLSADO)
+		VALUES (v_ano, v_mes, idSenador, idFornecedor, 
+		    idTipoDespesa, v_dataReembolso, 
+		    v_detalhamento ,v_documento, v_codDocumento, 
+		    v_valorReembolsado);
 		
 		
 		COMMIT;
@@ -922,13 +945,16 @@ O código da consulta pode ser visto abaixo.
    valores sejam diferentes em ordem de 10 */
 select u1.fornecedor as fornecedor, u1.despesa, 
        s1.nome as senador1, u1.valor_medio as valor_medio_senador1, 
-       u1.valor_total as valor_total_senador1, u1.nr_parcelas as nr_parcelas_senador1,
+       u1.valor_total as valor_total_senador1, 
+       u1.nr_parcelas as nr_parcelas_senador1,
        s2.nome as senador2, u2.valor_medio as valor_medio_senador2, 
-       u2.valor_total as valor_total_senador2, u2.nr_parcelas as nr_parcelas_senador2,
+       u2.valor_total as valor_total_senador2, 
+       u2.nr_parcelas as nr_parcelas_senador2,
        concat(s1.nome, " - ", s2.nome) as relacao_senadores, 
        concat(s2.nome, " - ", s1.nome) as relacao_senadores_inversa
 from (
-    /* seleciona primeiro grupo com informações de fornecedor, tipo de despesa e valor */
+    /* seleciona primeiro grupo com informações de fornecedor, 
+       tipo de despesa e valor */
     select f.id_fornecedor, f.NOME as fornecedor, td.ID_TIPO_DESPESA, 
 	   td.DESCRICAO as despesa, s.ID_SENADOR , s.NOME as senador,
            round((sum(d.VALOR_REEMBOLSADO) / count(d.MES)),2) as valor_medio, 
@@ -939,7 +965,8 @@ from (
 	      d.ID_SENADOR = s.ID_SENADOR 
         group by td.ID_TIPO_DESPESA, f.ID_FORNECEDOR, s.ID_SENADOR) u1, 
      (
-    /* seleciona segundo grupo com informações de fornecedor, tipo de despesa e valor */
+    /* seleciona segundo grupo com informações de fornecedor, 
+        tipo de despesa e valor */
     select f.id_fornecedor, f.NOME as fornecedor, td.ID_TIPO_DESPESA, 
 	   td.DESCRICAO as despesa, s.ID_SENADOR , s.NOME as senador, 
 	   round((sum(d.VALOR_REEMBOLSADO) / count(d.MES)),2) as valor_medio, 
@@ -960,7 +987,8 @@ where u1.id_fornecedor = u2.id_fornecedor and
       u1.id_tipo_despesa = u2.id_tipo_despesa and 
       u1.id_senador != u2.id_senador and u1.id_senador = s1.ID_SENADOR and 
       u2.id_senador = s2.id_senador and u1.nr_parcelas = u2.nr_parcelas and
-      ((u1.valor_medio > (u2.valor_medio*10)) OR (u2.valor_medio > (u1.valor_medio*10)))
+      ((u1.valor_medio > (u2.valor_medio*10)) OR 
+      (u2.valor_medio > (u1.valor_medio*10)))
 ```
 
 O resultado da consulta 3 pode ser visto abaixo.
@@ -1039,20 +1067,26 @@ A última consulta visa obter a evolução da participação de senadores do sex
 /* Consulta 05 - Evolução de percentual de parlamentares */ 
 /*               de cada gênero por legislatura.         */
 select 
-	ml.NR_LEGISLATURA , concat(l.ANO_INICIO, " - ", l.ANO_FIM) as LEGISLATURA , 
+	ml.NR_LEGISLATURA , concat(l.ANO_INICIO, " - ", l.ANO_FIM) 
+	as LEGISLATURA , 
 	s.SEXO, count(ml.NR_LEGISLATURA) as TOTAL_POR_SEXO, 
 	(count(ml.NR_LEGISLATURA) / (
 		select  count(s_s.SEXO)
 		from fbd.MANDATO_LEGISLATURA s_ml 
-			inner join fbd.MANDATO s_m on s_m.ID_MANDATO = s_ml.ID_MANDATO
-			inner join fbd.SENADOR s_s on s_s.ID_SENADOR  = s_m.ID_SENADOR 
+			inner join fbd.MANDATO s_m 
+			  on s_m.ID_MANDATO = s_ml.ID_MANDATO
+			inner join fbd.SENADOR s_s 
+			  on s_s.ID_SENADOR  = s_m.ID_SENADOR 
 		where s_m.LEGISLATURA = ml.NR_LEGISLATURA
 	)) * 100  as PORCENTAGEM
 # CONSULTA 5 - CONTINUACAO	
 from fbd.MANDATO_LEGISLATURA ml
-	inner join fbd.LEGISLATURA l on l.NR_LEGISLATURA = ml.NR_LEGISLATURA 
-	inner join fbd.MANDATO m on m.ID_MANDATO = ml.ID_MANDATO
-	inner join fbd.SENADOR s on s.ID_SENADOR  = m.ID_SENADOR 
+	inner join fbd.LEGISLATURA l 
+	  on l.NR_LEGISLATURA = ml.NR_LEGISLATURA 
+	inner join fbd.MANDATO m 
+	  on m.ID_MANDATO = ml.ID_MANDATO
+	inner join fbd.SENADOR s 
+	  on s.ID_SENADOR  = m.ID_SENADOR 
 group by s.SEXO, l.NR_LEGISLATURA 	
 order by l.NR_LEGISLATURA;
 ```
