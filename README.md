@@ -200,23 +200,27 @@ begin
     DECLARE v_id_mandato int default 0;
    
 	SELECT s.id_senador INTO v_id_senador 
-	    FROM fbd.SENADOR s WHERE TRIM(UPPER(s.nome)) = TRIM(UPPER(new.NOME)) COLLATE utf8mb4_0900_ai_ci;    
+	    FROM fbd.SENADOR s WHERE TRIM(UPPER(s.nome)) = TRIM(UPPER(new.NOME)) 
+	    COLLATE utf8mb4_0900_ai_ci;    
 	
 	IF (v_id_senador = 0) then
 	    INSERT INTO fbd.SENADOR (NOME, SEXO) 
 	        VALUES (UPPER(new.NOME), new.SEXO);
 	    SELECT s.id_senador INTO v_id_senador 
-	        FROM fbd.SENADOR s WHERE TRIM(UPPER(s.nome)) = TRIM(UPPER(new.NOME)) COLLATE utf8mb4_0900_ai_ci;
+	        FROM fbd.SENADOR s WHERE TRIM(UPPER(s.nome)) = TRIM(UPPER(new.NOME)) 
+		COLLATE utf8mb4_0900_ai_ci;
 	end if; 
    
 	SELECT m.id_mandato INTO v_id_mandato 
-	    FROM fbd.MANDATO m WHERE m.ID_SENADOR = v_id_senador AND m.LEGISLATURA = new.legislatura;
+	    FROM fbd.MANDATO m 
+	    WHERE m.ID_SENADOR = v_id_senador AND m.LEGISLATURA = new.legislatura;
  	
    IF (v_id_mandato = 0) then
     	INSERT INTO MANDATO (ID_SENADOR, ESTADO, PERIODO, LEGISLATURA, PARTIDO) 
 	    VALUES (V_ID_SENADOR, new.uf, new.PERIODO, new.LEGISLATURA, new.PARTIDO);
     	SELECT m.id_mandato INTO v_id_mandato 
-	    FROM fbd.MANDATO m WHERE m.ID_SENADOR = v_id_senador AND m.LEGISLATURA = new.legislatura;
+	    FROM fbd.MANDATO m 
+	    WHERE m.ID_SENADOR = v_id_senador AND m.LEGISLATURA = new.legislatura;
         INSERT INTO MANDATO_LEGISLATURA (ID_MANDATO, NR_LEGISLATURA) 
 	    VALUES (v_id_mandato, new.LEGISLATURA);
     end if;
@@ -250,9 +254,11 @@ BEGIN
 	    DATA_REEMBOLSO, DETALHAMENTO, VALOR_REEMBOLSADO, COD_DOCUMENTO 
     	FROM CARGA_DESPESA 
     	WHERE COD_DOCUMENTO NOT IN (
-    		SELECT COD_DOCUMENTO COLLATE utf8mb4_0900_as_ci AS COD FROM DESPESA
+    		SELECT COD_DOCUMENTO COLLATE utf8mb4_0900_as_ci AS COD 
+		    FROM DESPESA
     	) AND SENADOR IN (
-    		SELECT DISTINCT s.NOME COLLATE utf8mb4_0900_as_ci AS NOME_SENADOR FROM SENADOR s);
+    		SELECT DISTINCT s.NOME COLLATE utf8mb4_0900_as_ci AS NOME_SENADOR 
+		    FROM SENADOR s);
     DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
    	
     SELECT CONCAT('TOTAL DE REGISTROS: ',FOUND_ROWS()); 
@@ -262,8 +268,10 @@ BEGIN
 	read_loop: LOOP
     -- WHILE (done != true)DO
     	SET done = false;
-        FETCH curs INTO v_ano, v_mes, v_senador, v_tipoDespesa, v_cnpjCpf, v_fornecedor, 
-	    v_documento, v_dataReembolso, v_detalhamento, v_valorReembolsado, v_codDocumento;
+        FETCH curs INTO v_ano, v_mes, v_senador, v_tipoDespesa, 
+	    v_cnpjCpf, v_fornecedor, 
+	    v_documento, v_dataReembolso, v_detalhamento, 
+	    v_valorReembolsado, v_codDocumento;
         IF done THEN
         	LEAVE read_loop;
         END IF;
@@ -278,15 +286,18 @@ BEGIN
 			-- Verifica se foi informado um fornecedor
 			IF (v_cnpjCpf IS NOT NULL AND TRIM(v_cnpjCpf) <> '') THEN
 			-- Verifica se o fornecedor já está na base. Se não estiver, insere
-				SET cpfCnpjLimpo = TRIM(REPLACE(REPLACE(REPLACE(v_cnpjCPf, '.', ''),'-',''),'/',''));
+				SET cpfCnpjLimpo = 
+				TRIM(REPLACE(REPLACE(REPLACE(v_cnpjCPf, '.', ''),'-',''),'/',''));
 				-- SELECT CONCAT('Verificando fornecedor com cpfCnpj ', cpfCnpjLimpo);
 				SELECT ID_FORNECEDOR INTO idFornecedor FROM FORNECEDOR 
 				    WHERE TRIM(CPF_CNPJ) = cpfCnpjLimpo COLLATE utf8mb4_0900_as_ci;
 				-- SELECT CONCAT('Fornecedor: ', idFornecedor);
 				IF (idFornecedor IS NULL) THEN
-					INSERT INTO FORNECEDOR (NOME, CPF_CNPJ) VALUES (v_fornecedor, cpfCnpjLimpo);
+					INSERT INTO FORNECEDOR (NOME, CPF_CNPJ) 
+					VALUES (v_fornecedor, cpfCnpjLimpo);
 					SET idFornecedor = LAST_INSERT_ID();
-					-- SELECT CONCAT('Fornecedor ', v_fornecedor, ' inserido com id ', idFornecedor);
+					-- SELECT CONCAT('Fornecedor ', v_fornecedor, 
+					--' inserido com id ', idFornecedor);
 				END IF;
 			END IF;
 		
@@ -294,19 +305,24 @@ BEGIN
 			-- SELECT CONCAT('Verificando tipo de despesa', v_tipoDespesa);
 			SELECT ID_TIPO_DESPESA INTO idTipoDespesa 
 			    FROM TIPO_DESPESA 
-			    WHERE TRIM(UPPER(DESCRICAO)) = TRIM(UPPER(v_tipoDespesa)) COLLATE utf8mb4_0900_as_ci;
+			    WHERE TRIM(UPPER(DESCRICAO)) = TRIM(UPPER(v_tipoDespesa)) 
+			    COLLATE utf8mb4_0900_as_ci;
 			-- SELECT CONCAT('Tipo de despesa: ', idFornecedor);
 			IF (idTipoDespesa IS NULL) THEN
 				INSERT INTO TIPO_DESPESA (DESCRICAO) VALUES (v_tipoDespesa);
 				SET idTipoDespesa = LAST_INSERT_ID(); 
-				-- SELECT CONCAT('Tipo de despesa ', v_tipoDespesa, ' inserido com id ', idTipoDespesa);
+				-- SELECT CONCAT('Tipo de despesa ', 
+				-- v_tipoDespesa, ' inserido com id ', idTipoDespesa);
 			END IF;
 			
 			-- SELECT CONCAT ('Ano: ', v_ano);
 			-- Insere os dados na tabela DESPESA
-			INSERT INTO DESPESA (ANO, MES, ID_SENADOR, ID_FORNECEDOR, ID_TIPO_DESPESA, 
-			    DATA_REEMBOLSO, DETALHAMENTO , DOCUMENTO, COD_DOCUMENTO, VALOR_REEMBOLSADO)
-			    VALUES (v_ano, v_mes, idSenador, idFornecedor, idTipoDespesa, v_dataReembolso, 
+			INSERT INTO DESPESA (ANO, MES, ID_SENADOR, ID_FORNECEDOR, 
+			    ID_TIPO_DESPESA, 
+			    DATA_REEMBOLSO, DETALHAMENTO , DOCUMENTO, COD_DOCUMENTO, 
+			    VALOR_REEMBOLSADO)
+			    VALUES (v_ano, v_mes, idSenador, idFornecedor, 
+			    idTipoDespesa, v_dataReembolso, 
 			    v_detalhamento ,v_documento, v_codDocumento, v_valorReembolsado);
 			-- Limpa as variáveis para garantir que a verificação será feita corretamente
 			SET idFornecedor = NULL;
@@ -326,14 +342,18 @@ BEGIN
 
 END  $$
 
-CREATE DEFINER=`root`@`%` TRIGGER `TRG_CARGA_DESPESA` AFTER INSERT ON `CARGA_DESPESA` FOR EACH ROW begin
+CREATE DEFINER=`root`@`%` TRIGGER `TRG_CARGA_DESPESA` AFTER INSERT ON `CARGA_DESPESA` 
+FOR EACH ROW begin
     DECLARE v_id_despesa int default 0;
    
-	SELECT d.ID_DESPESA INTO v_id_despesa FROM fbd.DESPESA d WHERE d.COD_DOCUMENTO = new.COD_DOCUMENTO;    
+	SELECT d.ID_DESPESA INTO v_id_despesa FROM fbd.DESPESA d 
+	    WHERE d.COD_DOCUMENTO = new.COD_DOCUMENTO;    
 	
 	IF (v_id_despesa = 0) then
-		CALL fbd.PRC_INCLUSAO_DESPESA (new.ANO, new.MES, new.SENADOR, new.TIPO_DESPESA, new.CNPJ_CPF, 
-		    new.FORNECEDOR, new.DOCUMENTO, new.DATA_REEMBOLSO, new.DETALHAMENTO, new.VALOR_REEMBOLSADO, 
+		CALL fbd.PRC_INCLUSAO_DESPESA (new.ANO, new.MES, new.SENADOR, new.TIPO_DESPESA, 
+		    new.CNPJ_CPF, 
+		    new.FORNECEDOR, new.DOCUMENTO, new.DATA_REEMBOLSO, new.DETALHAMENTO, 
+		    new.VALOR_REEMBOLSADO, 
 		    new.COD_DOCUMENTO);
 	end if; 
    
@@ -362,7 +382,8 @@ BEGIN
 
    -- Verifica se o Senador já está na base, para recuperar o ID dele
    	-- SELECT CONCAT('Pesquisando o Senador ', v_senador); 
-	SELECT ID_SENADOR INTO idSenador FROM SENADOR WHERE UPPER(NOME) = UPPER(v_senador) COLLATE utf8mb4_0900_as_ci;
+	SELECT ID_SENADOR INTO idSenador FROM SENADOR 
+	    WHERE UPPER(NOME) = UPPER(v_senador) COLLATE utf8mb4_0900_as_ci;
 	-- SELECT concat('Recuperou o senador com id ', idSenador);
 	IF (idSenador IS NOT NULL AND idSenador > 0) THEN
 		START TRANSACTION;
@@ -370,34 +391,40 @@ BEGIN
 		-- Verifica se foi informado um fornecedor
 		IF (v_cnpjCpf IS NOT NULL AND TRIM(v_cnpjCpf) <> '') THEN
 		-- Verifica se o fornecedor já está na base. Se não estiver, insere
-			SET cpfCnpjLimpo = TRIM(REPLACE(REPLACE(REPLACE(v_cnpjCPf, '.', ''),'-',''),'/',''));
+			SET cpfCnpjLimpo = 
+			    TRIM(REPLACE(REPLACE(REPLACE(v_cnpjCPf, '.', ''),'-',''),'/',''));
 			-- SELECT CONCAT('Verificando fornecedor com cpfCnpj ', cpfCnpjLimpo);
 			SELECT ID_FORNECEDOR INTO idFornecedor FROM FORNECEDOR 
 			    WHERE TRIM(CPF_CNPJ) = cpfCnpjLimpo COLLATE utf8mb4_0900_as_ci;
 			-- SELECT CONCAT('Fornecedor: ', idFornecedor);
 			IF (idFornecedor IS NULL) THEN
-				INSERT INTO FORNECEDOR (NOME, CPF_CNPJ) VALUES (v_fornecedor, cpfCnpjLimpo);
+				INSERT INTO FORNECEDOR (NOME, CPF_CNPJ) 
+				    VALUES (v_fornecedor, cpfCnpjLimpo);
 				SET idFornecedor = LAST_INSERT_ID();
-				-- SELECT CONCAT('Fornecedor ', v_fornecedor, ' inserido com id ', idFornecedor);
+				-- SELECT CONCAT('Fornecedor ', v_fornecedor,
+				--' inserido com id ', idFornecedor);
 			END IF;
 		END IF;
 	
 		-- Verifica se o tipo de despesa já está na base
 		-- SELECT CONCAT('Verificando tipo de despesa', v_tipoDespesa);
 		SELECT ID_TIPO_DESPESA INTO idTipoDespesa FROM TIPO_DESPESA 
-		    WHERE TRIM(UPPER(DESCRICAO)) = TRIM(UPPER(v_tipoDespesa)) COLLATE utf8mb4_0900_as_ci;
+		    WHERE TRIM(UPPER(DESCRICAO)) = TRIM(UPPER(v_tipoDespesa)) 
+		    COLLATE utf8mb4_0900_as_ci;
 		-- SELECT CONCAT('Tipo de despesa: ', idFornecedor);
 		IF (idTipoDespesa IS NULL) THEN
 			INSERT INTO TIPO_DESPESA (DESCRICAO) VALUES (v_tipoDespesa);
 			SET idTipoDespesa = LAST_INSERT_ID(); 
-			-- SELECT CONCAT('Tipo de despesa ', v_tipoDespesa, ' inserido com id ', idTipoDespesa);
+			-- SELECT CONCAT('Tipo de despesa ', v_tipoDespesa, 
+			-- ' inserido com id ', idTipoDespesa);
 		END IF;
 		
 		-- SELECT CONCAT ('Ano: ', v_ano);
 		-- Insere os dados na tabela DESPESA
 		INSERT INTO DESPESA (ANO, MES, ID_SENADOR, ID_FORNECEDOR, ID_TIPO_DESPESA, 
 		    DATA_REEMBOLSO, DETALHAMENTO , DOCUMENTO, COD_DOCUMENTO, VALOR_REEMBOLSADO)
-		    VALUES (v_ano, v_mes, idSenador, idFornecedor, idTipoDespesa, v_dataReembolso, v_detalhamento ,
+		    VALUES (v_ano, v_mes, idSenador, idFornecedor, idTipoDespesa, 
+		    v_dataReembolso, v_detalhamento ,
 		    v_documento, v_codDocumento, v_valorReembolsado);
 		
 		
@@ -597,18 +624,21 @@ BEGIN
 		-- Verifica se foi informado um fornecedor
 		IF (v_cnpjCpf IS NOT NULL AND TRIM(v_cnpjCpf) <> '') THEN
 		-- Verifica se o fornecedor já está na base. Se não estiver, insere
-			SET cpfCnpjLimpo = TRIM(REPLACE(REPLACE(REPLACE(v_cnpjCPf, '.', ''),'-',''),'/',''));
+			SET cpfCnpjLimpo = 
+			    TRIM(REPLACE(REPLACE(REPLACE(v_cnpjCPf, '.', ''),'-',''),'/',''));
 			SELECT ID_FORNECEDOR INTO idFornecedor FROM FORNECEDOR 
 			    WHERE TRIM(CPF_CNPJ) = cpfCnpjLimpo COLLATE utf8mb4_0900_as_ci;
 			IF (idFornecedor IS NULL) THEN
-				INSERT INTO FORNECEDOR (NOME, CPF_CNPJ) VALUES (v_fornecedor, cpfCnpjLimpo);
+				INSERT INTO FORNECEDOR (NOME, CPF_CNPJ) 
+				    VALUES (v_fornecedor, cpfCnpjLimpo);
 				SET idFornecedor = LAST_INSERT_ID();
 			END IF;
 		END IF;
 	
 		-- Verifica se o tipo de despesa já está na base
 		SELECT ID_TIPO_DESPESA INTO idTipoDespesa FROM TIPO_DESPESA 
-		    WHERE TRIM(UPPER(DESCRICAO)) = TRIM(UPPER(v_tipoDespesa)) COLLATE utf8mb4_0900_as_ci;
+		    WHERE TRIM(UPPER(DESCRICAO)) = TRIM(UPPER(v_tipoDespesa)) 
+		    COLLATE utf8mb4_0900_as_ci;
 		IF (idTipoDespesa IS NULL) THEN
 			INSERT INTO TIPO_DESPESA (DESCRICAO) VALUES (v_tipoDespesa);
 			SET idTipoDespesa = LAST_INSERT_ID(); 
@@ -873,8 +903,10 @@ Um efeito colateral de se montar a consulta por meio de junção em vez de inter
 O código da consulta pode ser visto abaixo.
 
 ```sql
-/* Realiza o inner join para criar uma tabela com os dados de senadores de um lado e dados de senadores do outro, 
-   desde que o fornecedor seja o mesmo, o tipo de despesa seja a mesma e os valores sejam diferentes em ordem de 10 */
+/* Realiza o inner join para criar uma tabela com os dados de senadores 
+   de um lado e dados de senadores do outro, 
+   desde que o fornecedor seja o mesmo, o tipo de despesa seja a mesma e os 
+   valores sejam diferentes em ordem de 10 */
 select u1.fornecedor as fornecedor, u1.despesa, 
        s1.nome as senador1, u1.valor_medio as valor_medio_senador1, 
        u1.valor_total as valor_total_senador1, u1.nr_parcelas as nr_parcelas_senador1,
